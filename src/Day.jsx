@@ -21,7 +21,7 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu }) {
   const [x0, setX0] = useState(null)
   const sw = (dx) => { if (Math.abs(dx) > 70) setDate(addDays(date, dx < 0 ? 1 : -1)) }
   return (
-    <div onTouchStart={(e) => setX0([e.touches[0].clientX, e.touches[0].clientY])}
+    <div onTouchStart={(e) => setX0(e.target.closest('[data-card],.filters') ? null : [e.touches[0].clientX, e.touches[0].clientY])}
       onTouchEnd={(e) => { if (x0 && Math.abs(e.changedTouches[0].clientY - x0[1]) < 40) sw(e.changedTouches[0].clientX - x0[0]) }}>
       <div className="top">
         <div className="row"><span className="brand"><i />DOCKFLOW</span></div>

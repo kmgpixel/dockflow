@@ -35,7 +35,7 @@ export function Card({ o, team, onOpen, onProblem, onMenu, onAdvance }) {
         onDragStart={() => { moved.current = true; clearTimeout(lp.current) }} onDragEnd={end}
         onPointerDown={() => { moved.current = false; lp.current = setTimeout(() => { if (!moved.current) onMenu(o) }, 550) }}
         onPointerUp={() => clearTimeout(lp.current)} onPointerCancel={() => clearTimeout(lp.current)}
-        onTap={() => { if (!moved.current) onOpen(o) }}
+        onClick={() => { if (!moved.current) onOpen(o) }}
         onContextMenu={(e) => e.preventDefault()}>
         <div className="num">{o.num}{o.date && o.status === 'moved' ? ' · → ' + o.date : ''}</div>
         <div className="st">{issue ? 'Problème' : st.l}</div>
