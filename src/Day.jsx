@@ -13,7 +13,7 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary, on
   const [q, setQ] = useState(''), [fs, setFs] = useState(null), [fp, setFp] = useState(null)
   const t = today()
   const list = useMemo(() => s.orders.filter((o) => o.date === date && (!fs || o.status === fs) && (!fp || o.prep === fp) &&
-    (!q || (o.num + o.client + (o.city || '')).toLowerCase().includes(q.toLowerCase()))), [s.orders, date, fs, fp, q])
+    (!q || (o.num + o.client + (o.city || '')).toLowerCase().includes(q.toLowerCase()))).sort((a, b) => (a.time || '99').localeCompare(b.time || '99')), [s.orders, date, fs, fp, q])
   const all = s.orders.filter((o) => o.date === date && o.status !== 'cancel')
   const n = (f) => all.filter(f).length
   const pl = (v, a, b) => (v > 1 ? b : a)

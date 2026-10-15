@@ -28,7 +28,8 @@ export const getState = () => state
 export function useStore() { return useSyncExternalStore((f) => (subs.add(f), () => subs.delete(f)), () => state) }
 export async function init() {
   try { state = (await get('dockflow')) || null } catch { state = null }
-  state = state ? migrate(state) : seed()
+  const had = state; state = state ? migrate(state) : seed()
+  if (had && had.v !== state.v) set('dockflow', state).catch(() => {})
   try { navigator.storage?.persist?.() } catch {}
 }
 export const setState = (fn) => { state = fn(state); emit() }
