@@ -53,11 +53,6 @@ export function Settings({ s, date, onStats, onSummary, onOnboard }) {
       <div className="sec"><span>Thème</span></div>
       <div className="list"><div className="btns">{[['auto', 'Auto'], ['light', 'Clair'], ['dark', 'Sombre']].map(([k, l]) =>
         <button key={k} className={'chip' + (s.theme === k ? ' on' : '')} style={{ flex: 1 }} onClick={() => setTheme(k)}>{l}</button>)}</div></div>
-      <div className="sec"><span>Affichage</span></div>
-      <div className="list"><button className={'btn ' + (s.settings?.dockMode ? 'acc' : 'ghost')} data-dockmode aria-pressed={!!s.settings?.dockMode} onClick={() => setSettings({ dockMode: !s.settings?.dockMode })}>Mode au quai : {s.settings?.dockMode ? 'activé' : 'désactivé'}</button>
-        <div className="meta">Textes plus grands, boutons larges, contraste renforcé.</div></div>
-      <div className="sec"><span>Équipe</span></div>
-      <div className="list"><button className="btn ghost" data-onboard onClick={onOnboard}>Configurer mon équipe</button></div>
       <div className="sec"><span>Données</span></div>
       <div className="list">
         <button className="btn" data-backup onClick={backup}>Sauvegarder (.json)</button>
@@ -68,6 +63,11 @@ export function Settings({ s, date, onStats, onSummary, onOnboard }) {
         <button className="btn ghost" onClick={loadDemo}>Recharger les données de démo</button>
         <button className="btn bad" data-clear onClick={() => { if (confirm('Vider toutes les commandes ?')) { resetDemo(); toast('Données vidées') } }}>Vider les données de démo</button>
       </div>
+      <div className="sec"><span>Affichage</span></div>
+      <div className="list"><button className={'btn ' + (s.settings?.dockMode ? 'acc' : 'ghost')} data-dockmode aria-pressed={!!s.settings?.dockMode} onClick={() => setSettings({ dockMode: !s.settings?.dockMode })}>Mode au quai : {s.settings?.dockMode ? 'activé' : 'désactivé'}</button>
+        <div className="meta">Textes plus grands, boutons larges, contraste renforcé.</div></div>
+      <div className="sec"><span>Équipe</span></div>
+      <div className="list"><button className="btn ghost" data-onboard onClick={onOnboard}>Configurer mon équipe</button></div>
       <div className="sec"><span>À propos</span></div>
       <div className="list"><div className="card meta">DockFlow v1.2 — suivi des livraisons du dépôt. Données stockées uniquement sur cet appareil. Toutes les données de démo sont fictives.</div></div>
     </div>
