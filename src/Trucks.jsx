@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Sheet, toast } from './ui'
 import { STATUS, loadTo, depart, saveSig, setStatus, postpone, nameOf, hhmm, addDays, today, lastDock, fmtDM, getState } from './store'
 import { truckOrders, toLoad } from './truckSel'
-import { formatPack, fmtH } from './pack'
+import { formatPack, fmtH, formatPackUI } from './pack'
 import { dockName } from './people'
 import { loadPdf, deliver } from './pdf'
 import { withUndo } from './undo'
@@ -47,7 +47,7 @@ export function Trucks({ s }) {
         {[[t0, 'Livraison aujourd\'hui'], [tm, 'Livraison demain']].map(([d, l]) => { const g = ready.filter((o) => o.date === d); return g.length ? (
           <div key={d} data-ready-group={d}><div className="grp">{l} · {g.length}</div>
             {g.map((o) => <div key={o.id} className="card" style={{ marginTop: 8 }}><div className="row"><b>{o.client}</b><span className="num">{fmtH(o.time)}</span></div>
-              <div className="meta">{o.city} · {o.num} · {formatPack(o)}</div></div>)}</div>) : null })}
+              <div className="meta">{o.city} · {o.num} · {formatPackUI(o)}</div></div>)}</div>) : null })}
         {!day.some((o) => o.driver && ['loaded', 'go'].includes(o.status)) && (<>
           <div className="sec" style={{ padding: '14px 6px 0' }}><span>Aucun camion chargé · livreurs actifs</span></div>
           {drivers.map((dr) => { const last = lastDock(s, dr.id)

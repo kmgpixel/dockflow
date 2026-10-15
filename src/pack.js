@@ -7,6 +7,7 @@ export const fmtH = (t) => { if (!t || !t.includes(':')) return ''; const [h, m]
 export const ductsOf = (o) => (o.ducts || []).filter((g) => g.q > 0)
 export const ductLine = (g) => g.q + ' × Ø' + g.d + ' ' + fmtLen(g.len)
 
+export const formatPackUI = (o) => formatPack(o).split(' · ').map((x) => x.replace(/ /g, '\u00a0')).join(' · ')
 export function formatPack(o) {
   const p = []
   if (o.pallets > 0) p.push(o.pallets + ' pal.')

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Sheet, compress, toast } from './ui'
 import { duplicateOrder, STATUS, addProblem, upd, setStatus, postpone, nameOf, hhmm, addDays, today, getState } from './store'
 import { orderPdf, deliver } from './pdf'
-import { formatPack } from './pack'
+import { formatPack, formatPackUI } from './pack'
 
 const act = (st) => st.preps.filter((p) => p.on)
 
@@ -68,7 +68,7 @@ export function DetailSheet({ o, onClose, team, onPack, onFinish }) {
       <div className="row"><span className="num">{o.num}</span><span className="st" style={{ '--s': STATUS[o.status].c, padding: '6px 10px', borderRadius: 99, color: '#fff', background: STATUS[o.status].c, fontSize: 12, fontWeight: 700 }}>{STATUS[o.status].l}</span></div>
       <label><span className="flab">Client</span><input value={e.client} onChange={set('client')} aria-label="Client" /></label>
       <div className="btns" style={{ flexWrap: 'nowrap' }}><label style={{ flex: 2 }}><span className="flab">Ville</span><input value={e.city || ''} onChange={set('city')} aria-label="Ville" /></label><label style={{ flex: 1 }}><span className="flab">Heure</span><input type="time" value={e.time || ''} onChange={set('time')} aria-label="Heure" /></label></div>
-      <div className="card" data-pack><span className="flab">Conditionnement</span><b>{formatPack(o) || 'Pas encore saisi'}</b>
+      <div className="card" data-pack><span className="flab">Conditionnement</span><b>{formatPackUI(o) || 'Pas encore saisi'}</b>
         <div className="btns"><button className="btn ghost" data-editpack onClick={() => { setEdit(null); onClose(); onPack(o) }}>Modifier</button>
           {['prep', 'wait'].includes(o.status) && <button className="btn acc" data-finish onClick={() => { setEdit(null); onClose(); onFinish(o) }}>Fin de préparation</button>}</div></div>
       <span className="flab" style={{ marginBottom: -8 }}>Préparateur</span><select value={e.prep || ''} onChange={set('prep')} aria-label="Préparateur"><option value="">Sans préparateur</option>{act(team).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>

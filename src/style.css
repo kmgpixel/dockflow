@@ -125,3 +125,5 @@ textarea{resize:none;min-height:88px}
 .grp{padding:12px 6px 0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
 .sel-it{display:grid;grid-template-columns:1fr auto;gap:2px 8px;text-align:left}
 .sel-it .cli{font-size:16px}
+
+.toast{top:calc(64px + env(safe-area-inset-top))}

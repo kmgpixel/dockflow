@@ -1,7 +1,7 @@
 import { memo, useRef } from 'react'
 import { motion, useMotionValue, useTransform, animate } from 'motion/react'
 import { STATUS, NEXT, hasIssue, resolve } from './store'
-import { formatPack, where } from './pack'
+import { formatPack, where, formatPackUI } from './pack'
 import { prepName } from './people'
 import { fmtDM } from './dates'
 
@@ -21,7 +21,7 @@ function CardBase({ o, team, onOpen, onProblem, onMenu, onAdvance }) {
     else if ((i.offset.x < -70 || i.velocity.x < -500) && i.offset.x < -10) onProblem(o)
     animate(x, 0, SNAP)
   }
-  const pack = formatPack(o)
+  const pack = formatPackUI(o)
   const col = issue ? 'var(--bad)' : st.c
   return (
     <motion.div layout={dragging.current ? false : 'position'} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
