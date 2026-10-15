@@ -83,9 +83,9 @@ export function DetailSheet({ o, onClose, team }) {
   return (
     <Sheet open onClose={() => { setEdit(null); onClose() }}>
       <div className="row"><span className="num">{o.num}</span><span className="st" style={{ '--s': STATUS[o.status].c, padding: '6px 10px', borderRadius: 99, color: '#fff', background: STATUS[o.status].c, fontSize: 12, fontWeight: 700 }}>{STATUS[o.status].l}</span></div>
-      <input value={e.client} onChange={set('client')} aria-label="Client" />
-      <div className="btns"><input type="number" value={e.pallets} onChange={set('pallets')} aria-label="Palettes" /><input type="number" value={e.parcels} onChange={set('parcels')} aria-label="Colis" /></div>
-      <select value={e.prep || ''} onChange={set('prep')} aria-label="Préparateur"><option value="">Sans préparateur</option>{act(team).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+      <label><span className="flab">Client / ville</span><input value={e.client} onChange={set('client')} aria-label="Client" /></label>
+      <div className="btns"><label style={{ flex: 1 }}><span className="flab">Palettes</span><input type="number" inputMode="numeric" value={e.pallets} onChange={set('pallets')} aria-label="Palettes" /></label><label style={{ flex: 1 }}><span className="flab">Colis</span><input type="number" inputMode="numeric" value={e.parcels} onChange={set('parcels')} aria-label="Colis" /></label></div>
+      <span className="flab" style={{ marginBottom: -8 }}>Préparateur</span><select value={e.prep || ''} onChange={set('prep')} aria-label="Préparateur"><option value="">Sans préparateur</option>{act(team).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
       <textarea placeholder="Commentaire" value={e.comment} onChange={set('comment')} />
       {edit && <button className="btn acc" onClick={save}>Enregistrer</button>}
       {o.photos.length > 0 && <div className="photos">{o.photos.map((p, i) => <img key={i} src={p} alt="" />)}</div>}

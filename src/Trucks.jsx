@@ -69,7 +69,7 @@ export function Trucks({ s, date }) {
         {ready.map((o) => <button key={o.id} className="opt" onClick={() => setSel(sel.includes(o.id) ? sel.filter((x) => x !== o.id) : [...sel, o.id])}>
           <span><b className="num">{o.num}</b> {o.client}</span><span>{sel.includes(o.id) ? '✓' : '○'}</span></button>)}
         <div className="lbl">Livreur</div>
-        {drivers.map((d) => <button key={d.id} className="opt" data-driver={d.name} onClick={() => { if (!sel.length) return; loadTo(sel, d.id, dock || null); toast(sel.length + ' chargée(s) → ' + d.name); setPickFor(null) }}>
+        {drivers.map((d) => <button key={d.id} className="opt" data-driver={d.name} onClick={() => { if (!sel.length) return; loadTo(sel, d.id, dock || null); toast((sel.length > 1 ? sel.length + ' commandes chargées' : 'Commande chargée') + ' · ' + d.name); setPickFor(null) }}>
           <b>{d.name}</b><span className="meta">{day.filter((o) => o.driver === d.id).length} cmd</span></button>)}
       </Sheet>
       <Sheet open={!!sigFor} onClose={() => setSigFor(null)}>
