@@ -238,3 +238,18 @@ select{appearance:none;-webkit-appearance:none;padding-right:40px;background-ima
 .dock-mode .chip,.dock-mode .btn{font-size:16px}
 .dock-mode .tbd,.dock-mode .sic{transform:scale(1.2)}
 .dock-mode .card{border-width:2px}
+
+/* --- V1.3 lot 2 finitions --- */
+.ob-body{align-items:flex-start;padding-top:max(88px,calc(env(safe-area-inset-top) + 56px))}
+.ob-chip{padding:0 6px 0 14px}
+.ob-chip span{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:color-mix(in srgb,var(--acc) 10%,transparent)}
+.ob-dots i{height:10px}
+.ob-step .meta{font-size:15px;color:var(--mut)}
+[data-ob-mode].on{background:var(--ink)!important;border-color:var(--ink)!important;color:var(--bg)!important}
+[data-dockmode]{display:flex;justify-content:space-between;align-items:center}
+[data-dockmode]::after{content:"";width:46px;height:28px;border-radius:99px;background:var(--line);box-shadow:inset 0 0 0 2px var(--line);transition:background .18s}
+[data-dockmode][aria-pressed="true"]::after{background:#fff;box-shadow:inset 22px 0 0 2px var(--acc)}
+.btn.bad{margin-top:14px}
+[data-dockmode][aria-pressed="true"]{background:var(--card)!important;color:var(--ink)!important;border:1px solid var(--line)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent)}
+.ob-step .btn.acc[aria-label="Ajouter"]{background:color-mix(in srgb,var(--acc) 12%,var(--card));color:var(--acc)}
