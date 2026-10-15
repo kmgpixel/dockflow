@@ -1,28 +1,10 @@
 import { useState } from 'react'
 import { Sheet, compress, toast } from './ui'
-import { duplicateOrder, STATUS, addOrder, addProblem, upd, setStatus, postpone, nameOf, hhmm, addDays, today, getState } from './store'
+import { duplicateOrder, STATUS, addProblem, upd, setStatus, postpone, nameOf, hhmm, addDays, today, getState } from './store'
 import { orderPdf, deliver } from './pdf'
+import { formatPack } from './pack'
 
 const act = (st) => st.preps.filter((p) => p.on)
-
-export function AddSheet({ open, onClose, team, date }) {
-  const [f, setF] = useState({ num: '', client: '', date, prep: '' })
-  const s = (k) => (e) => setF({ ...f, [k]: e.target.value })
-  const ok = f.num.trim() && f.client.trim()
-  return (
-    <Sheet open={open} onClose={onClose}>
-      <h2>Nouvelle commande</h2>
-      <input placeholder="N° (ex. C-2420)" value={f.num} onChange={s('num')} aria-label="Numéro" />
-      <input placeholder="Client / ville" value={f.client} onChange={s('client')} aria-label="Client" />
-      <input type="date" value={f.date} onChange={s('date')} aria-label="Date de livraison" />
-      <select value={f.prep} onChange={s('prep')} aria-label="Préparateur"><option value="">Préparateur (optionnel)</option>
-        {act({ preps: team.preps }).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-      <input type="number" inputMode="numeric" placeholder="Palettes (1)" value={f.pallets || ''} onChange={s('pallets')} />
-      <button className="btn acc" disabled={!ok} style={{ opacity: ok ? 1 : 0.4 }}
-        onClick={() => { addOrder(f); toast('Commande ajoutée'); setF({ num: '', client: '', date, prep: '' }); onClose() }}>Ajouter</button>
-    </Sheet>
-  )
-}
 
 export function ProblemSheet({ o, onClose }) {
   const [prod, setProd] = useState(''), [q, setQ] = useState('1'), [err, setErr] = useState(false), [note, setNote] = useState(''), [ph, setPh] = useState([])
@@ -31,7 +13,7 @@ export function ProblemSheet({ o, onClose }) {
   return (
     <Sheet open={!!o} onClose={onClose}>
       <h2>Signaler un problème</h2>
-      <div className="meta">{o?.num} · {o?.client}</div>
+      <div className="meta">{o?.client} · {o?.city} · {o?.num}</div>
       <div className="lbl">Produit manquant</div>
       <div className="btns"><input style={{ flex: 3 }} placeholder="Produit" value={prod} onChange={(e) => setProd(e.target.value)} aria-label="Produit" />
         <input style={{ flex: 1, minWidth: 70 }} type="number" inputMode="numeric" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Quantité" /></div>
@@ -75,7 +57,7 @@ export function PostponeSheet({ o, onClose }) {
   )
 }
 
-export function DetailSheet({ o, onClose, team }) {
+export function DetailSheet({ o, onClose, team, onPack, onFinish }) {
   const [edit, setEdit] = useState(null)
   if (!o) return <Sheet open={false} />
   const e = edit || o
@@ -84,8 +66,11 @@ export function DetailSheet({ o, onClose, team }) {
   return (
     <Sheet open onClose={() => { setEdit(null); onClose() }}>
       <div className="row"><span className="num">{o.num}</span><span className="st" style={{ '--s': STATUS[o.status].c, padding: '6px 10px', borderRadius: 99, color: '#fff', background: STATUS[o.status].c, fontSize: 12, fontWeight: 700 }}>{STATUS[o.status].l}</span></div>
-      <label><span className="flab">Client / ville</span><input value={e.client} onChange={set('client')} aria-label="Client" /></label>
-      <div className="btns"><label style={{ flex: 1 }}><span className="flab">Palettes</span><input type="number" inputMode="numeric" value={e.pallets} onChange={set('pallets')} aria-label="Palettes" /></label><label style={{ flex: 1 }}><span className="flab">Colis</span><input type="number" inputMode="numeric" value={e.parcels} onChange={set('parcels')} aria-label="Colis" /></label></div>
+      <label><span className="flab">Client</span><input value={e.client} onChange={set('client')} aria-label="Client" /></label>
+      <div className="btns" style={{ flexWrap: 'nowrap' }}><label style={{ flex: 2 }}><span className="flab">Ville</span><input value={e.city || ''} onChange={set('city')} aria-label="Ville" /></label><label style={{ flex: 1 }}><span className="flab">Heure</span><input type="time" value={e.time || ''} onChange={set('time')} aria-label="Heure" /></label></div>
+      <div className="card" data-pack><span className="flab">Conditionnement</span><b>{formatPack(o) || 'Pas encore saisi'}</b>
+        <div className="btns"><button className="btn ghost" data-editpack onClick={() => { setEdit(null); onClose(); onPack(o) }}>Modifier</button>
+          {['prep', 'wait'].includes(o.status) && <button className="btn acc" data-finish onClick={() => { setEdit(null); onClose(); onFinish(o) }}>Fin de préparation</button>}</div></div>
       <span className="flab" style={{ marginBottom: -8 }}>Préparateur</span><select value={e.prep || ''} onChange={set('prep')} aria-label="Préparateur"><option value="">Sans préparateur</option>{act(team).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
       <textarea placeholder="Commentaire" value={e.comment} onChange={set('comment')} />
       {edit && <button className="btn acc" onClick={save}>Enregistrer</button>}

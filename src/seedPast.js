@@ -25,8 +25,8 @@ export function seedPast(t, addDays, uid) {
       if (pending) status = 'ready'
       else { h.push({ ts: base + 72e5, action: 'Chargée', by: 'Moi' }, { ts: base + 108e5, action: 'Départ', by: 'Moi' }, { ts: base + 18e6, action: 'Statut → ' + (fail ? 'Non livrée' : 'Livrée'), by: 'Moi' }) }
       if (pending) h.push({ ts: base + 5e6, action: 'Statut → Prête', by: 'Moi' })
-      out.push({ id: uid(), num: 'C-' + n++, client: c[0] + ' — ' + c[1], date, prep, driver: pending ? null : driver, dock: pending ? null : 'q' + [1, 2, 4, 5, 6][DR.indexOf(driver) % 5],
-        pallets: 1 + Math.floor(rnd() * 4), parcels: 3 + Math.floor(rnd() * 25), status, missing, err, errNote: '', resolved: !special && (missing.length > 0 || err), photos: [], comment: '', history: h })
+      out.push({ id: uid(), num: 'SO-' + n++, client: c[1], city: c[0], time: pick(['08:00', '10:00', '14:00']), date, prep, driver: pending ? null : driver, dock: pending ? null : 'q' + [1, 2, 4, 5, 6][DR.indexOf(driver) % 5],
+        pallets: 1 + Math.floor(rnd() * 4), parcels: 3 + Math.floor(rnd() * 25), bulk: false, bulkNote: '', ducts: rnd() < 0.3 ? [{ d: pick([160, 200, 250]), len: 3, q: 2 + Math.floor(rnd() * 8) }] : [], status, missing, err, errNote: '', resolved: !special && (missing.length > 0 || err), photos: [], comment: '', history: h })
     }
   }
   return out

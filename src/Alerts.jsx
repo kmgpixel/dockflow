@@ -8,7 +8,7 @@ export function Alerts({ s, onOpen }) {
     <div className="list" style={{ paddingBottom: 0 }} data-alerts>
       {a.map((x, i) => (
         <button key={x.o.id + x.kind} className="alert" onClick={() => onOpen(x.o)}>
-          <span className="num">{x.o.num}</span><span className="cli2">{x.o.client.split('—').pop().trim()}</span>
+          <span className="num">{x.o.num}</span><span className="cli2">{x.o.client + ' · ' + (x.o.city || '')}</span>
           <span className="why">{x.txt}</span>
         </button>))}
     </div></>)

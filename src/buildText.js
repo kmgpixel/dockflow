@@ -1,7 +1,8 @@
 import { nameOf, addDays } from './store'
 import { alerts } from './calcAlerts'
+import { formatPack } from './pack'
 
-const line = (o) => '  - ' + o.num + ' ' + o.client.split('—').pop().trim()
+const line = (o) => '  - ' + o.client + ' (' + (o.city || '?') + (o.time ? ' ' + o.time.replace(':', 'h') : '') + ') ' + o.num + (formatPack(o) ? ' — ' + formatPack(o) : '')
 const block = (t, l) => (l.length ? t + ' (' + l.length + ') :\n' + l.map(line).join('\n') : t + ' : aucune')
 
 export function buildSummary(s, date) {
@@ -14,8 +15,8 @@ export function buildSummary(s, date) {
   const al = alerts(s)
   const d = new Date(date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const L = ['Résumé du soir — ' + d, '', block('Livrées', of('done')), '', block('Non livrées', of('fail').map((o) => ({ ...o, client: o.client + (o.driver ? ' [' + nameOf(s.team.drivers, o.driver) + ']' : '') }))), '', block('Reportées', moved), '', 'Problèmes en cours' + (pb.length ? ' (' + pb.length + ') :' : ' : aucun')]
-  pb.forEach((o) => L.push('  - ' + o.num + ' : ' + [...o.missing.map((m) => m.qte + ' × ' + m.produit + ' manquant'), o.err && 'erreur de préparation'].filter(Boolean).join(', ')))
+  pb.forEach((o) => L.push('  - ' + o.client + ' ' + o.num + ' : ' + [...o.missing.map((m) => m.qte + ' × ' + m.produit + ' manquant'), o.err && 'erreur de préparation'].filter(Boolean).join(', ')))
   L.push('', block('Encore en cours ce soir', open), '', 'À suivre demain :', '  - ' + tm.length + ' commande' + (tm.length > 1 ? 's' : '') + ' prévue' + (tm.length > 1 ? 's' : '') + (tm.length ? ' (' + tm.map((o) => o.num).join(', ') + ')' : ''))
-  al.forEach((a) => L.push('  - À relancer : ' + a.o.num + ' — ' + a.txt))
+  al.forEach((a) => L.push('  - À relancer : ' + a.o.client + ' ' + a.o.num + ' — ' + a.txt))
   return L.join('\n')
 }

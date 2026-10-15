@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react'
 import { get, set } from 'idb-keyval'
-import { seedPast } from './seedPast'
 
 export const STATUS = {
   todo: { l: 'À préparer', c: '#9a9ea6', p: 0 },
@@ -16,40 +15,11 @@ export const STATUS = {
 }
 export const NEXT = { todo: 'prep', prep: 'ready', wait: 'ready', ready: 'loaded' }
 
-export const iso = (d) => {
-  const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10)
-}
-export const addDays = (s, n) => { const d = new Date(s + 'T12:00'); d.setDate(d.getDate() + n); return iso(d) }
-export const today = () => iso(new Date())
-export const hhmm = (ts) => new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-export const uid = () => Math.random().toString(36).slice(2, 9)
-
-function seed() {
-  const t = today(), tm = addDays(t, 1)
-  const P = ['Karim', 'Julie', 'Théo'], D = ['Express Nord', 'Sofiane', 'Trans Vallée', 'Marc L.', 'Transports Alba', "Rapid'Est"]
-  const team = {
-    preps: P.map((n, i) => ({ id: 'p' + i, name: n, on: true })).concat([{ id: 'pm', name: 'Mathieu (resp.)', on: true }]),
-    drivers: D.map((n, i) => ({ id: 'd' + i, name: n, on: true })),
-    docks: [1, 2, 4, 5, 6].map((n) => ({ id: 'q' + n, name: 'Quai ' + n, on: true })),
-  }
-  const mk = (num, client, date, prep, status, pal, col, extra = {}) => ({
-    id: uid(), num, client, date, prep, driver: null, dock: null, pallets: pal, parcels: col, status,
-    missing: [], err: false, errNote: '', resolved: false, photos: [], comment: '',
-    history: [{ ts: Date.now() - 36e5, action: 'Commande créée', by: 'Démo' }], ...extra,
-  })
-  const orders = [
-    mk('C-2402', 'Valence — Clim Services', t, 'p0', 'prep', 2, 14),
-    mk('C-2407', 'Lyon 7e — Aéro Bât', t, 'p1', 'prep', 1, 6, { missing: [{ produit: 'Coude 90° Ø160', qte: 4 }] }),
-    mk('C-2413', "Grenoble — Ventil'Alpes", t, 'p2', 'wait', 3, 22, { history: [{ ts: Date.now() - 40 * 36e5, action: 'Commande créée', by: 'Démo' }, { ts: Date.now() - 30 * 36e5, action: 'Statut → Attente client', by: 'Moi' }] }),
-    mk('C-2404', 'Vienne — Atelier Durand', t, 'p0', 'ready', 3, 18),
-    mk('C-2409', 'Annecy — Thermo Savoie', t, 'p1', 'todo', 2, 9),
-    mk('C-2411', 'Chambéry — Sanitaire Plus', t, null, 'todo', 1, 4),
-    mk('C-2415', 'Bourg — Plomberie Ain', tm, 'p2', 'todo', 4, 30),
-    mk('C-2416', 'Saint-Étienne — Froid & Co', tm, null, 'todo', 2, 11),
-  ]
-  orders.push(...seedPast(t, addDays, uid))
-  return { orders, team, theme: 'auto', sigs: {}, departs: {}, v: 2 }
-}
+export { iso, addDays, today, hhmm, uid, fmtDM } from './dates'
+import { today, addDays, hhmm, uid } from './dates'
+import { formatPack } from './pack'
+import { migrate } from './migrate'
+import { seed } from './seed'
 
 let state = null
 const subs = new Set()
@@ -58,11 +28,11 @@ export const getState = () => state
 export function useStore() { return useSyncExternalStore((f) => (subs.add(f), () => subs.delete(f)), () => state) }
 export async function init() {
   try { state = (await get('dockflow')) || null } catch { state = null }
-  if (!state) state = seed()
+  state = state ? migrate(state) : seed()
   try { navigator.storage?.persist?.() } catch {}
 }
 export const setState = (fn) => { state = fn(state); emit() }
-export const replaceAll = (s) => { state = s; emit() }
+export const replaceAll = (s) => { state = migrate(s); emit() }
 export const resetDemo = () => { state = { ...seed(), orders: [], theme: state.theme }; emit() }
 export const loadDemo = () => { state = seed(); emit() }
 
@@ -73,10 +43,15 @@ export const upd = (id, fn, action) => setState((s) => ({
 export const nameOf = (list, id) => list.find((x) => x.id === id)?.name || '—'
 
 export const addOrder = (o) => setState((s) => ({
-  ...s, orders: [...s.orders, { id: uid(), num: o.num, client: o.client, date: o.date, prep: o.prep || null, driver: null, dock: null,
-    pallets: +o.pallets || 1, parcels: +o.parcels || 0, status: 'todo', missing: [], err: false, errNote: '', resolved: false, photos: [], comment: '',
+  ...s, orders: [...s.orders, { id: uid(), num: o.num.trim(), client: o.client.trim(), city: (o.city || '').trim(), time: o.time || '', date: o.date, prep: o.prep || null,
+    driver: null, dock: null, pallets: 0, parcels: 0, bulk: false, bulkNote: '', ducts: [], status: 'todo', missing: [], err: false, errNote: '', resolved: false, photos: [], comment: '',
     history: [{ ts: Date.now(), action: 'Commande créée', by: 'Moi' }] }],
 }))
+export const finishPrep = (id, pk) => {
+  const s = getState(), pn = nameOf(s.team.preps, pk.prep).replace(/\s*\(resp\.?\)/i, '')
+  upd(id, (x) => ({ ...x, ...pk, prep: pk.prep || x.prep, status: 'ready', packedAt: Date.now() }), 'Préparation terminée · ' + pn + ' · ' + formatPack(pk))
+}
+export const setPack = (id, pk) => upd(id, (x) => ({ ...x, ...pk }), 'Conditionnement : ' + formatPack(pk))
 export const advance = (o) => NEXT[o.status] && upd(o.id, (x) => ({ ...x, status: NEXT[x.status] }), 'Statut → ' + STATUS[NEXT[o.status]].l)
 export const setStatus = (id, st, note) => upd(id, (x) => ({ ...x, status: st }), 'Statut → ' + STATUS[st].l + (note ? ' (' + note + ')' : ''))
 export const postpone = (id, date) => upd(id, (x) => ({ ...x, status: 'moved', date, driver: null }), 'Reportée au ' + date)
@@ -87,14 +62,17 @@ export const addProblem = (id, p) => upd(id, (x) => ({
 export const resolve = (id) => upd(id, (x) => ({ ...x, resolved: true }), 'Problème résolu')
 export const hasIssue = (o) => !o.resolved && (o.missing.length > 0 || o.err)
 
-export const loadTo = (ids, driver, dock) => setState((s) => ({
-  ...s, orders: s.orders.map((o) => (ids.includes(o.id) ? log({ ...o, driver, dock, status: 'loaded', loadedAt: Date.now() },
-    'Chargée → ' + nameOf(s.team.drivers, driver) + ' à ' + hhmm(Date.now())) : o)),
-}))
+export const lastDock = (s, driver) => [...s.orders].filter((o) => o.driver === driver && o.dock).sort((a, b) => (b.loadedAt || 0) - (a.loadedAt || 0))[0]?.dock || null
+export const loadTo = (ids, driver, dock) => setState((s) => {
+  const dk = dock || lastDock(s, driver), ts = Date.now()
+  return { ...s, orders: s.orders.map((o) => (ids.includes(o.id) ? log({ ...o, driver, dock: dk, status: 'loaded', loadedAt: ts },
+    'Chargée → ' + nameOf(s.team.drivers, driver) + ' à ' + hhmm(ts)) : o)) }
+})
+// Le départ concerne tout ce qui est chargé pour ce livreur, quel que soit le jour de livraison
 export const depart = (driver, date) => setState((s) => {
   const ts = Date.now()
   return { ...s, departs: { ...s.departs, [driver + date]: ts }, orders: s.orders.map((o) =>
-    o.driver === driver && o.date === date && o.status === 'loaded' ? log({ ...o, status: 'go', departedAt: ts }, 'Départ ' + hhmm(ts)) : o) }
+    o.driver === driver && o.status === 'loaded' ? log({ ...o, status: 'go', departAt: ts, departedAt: ts }, 'Départ ' + hhmm(ts)) : o) }
 })
 export const saveSig = (driver, date, data) => setState((s) => ({ ...s, sigs: { ...s.sigs, [driver + date]: data } }))
 export const setTheme = (theme) => setState((s) => ({ ...s, theme }))
@@ -106,8 +84,8 @@ export function duplicateOrder(o) {
   while (s.orders.some((x) => x.num === num)) num = o.num + '-C' + k++
   const date = addDays(today(), 1)
   const note = o.missing.length ? 'Manquants : ' + o.missing.map((m) => m.qte + ' × ' + m.produit).join(', ') : ''
-  setState((st) => ({ ...st, orders: [...st.orders, { id: uid(), num, client: o.client, date, prep: o.prep || null, driver: null, dock: null,
-    pallets: 1, parcels: o.missing.reduce((a, m) => a + m.qte, 0) || 1, status: 'todo', missing: [], err: false, errNote: '', resolved: false, photos: [],
+  setState((st) => ({ ...st, orders: [...st.orders, { id: uid(), num, client: o.client, city: o.city || '', time: o.time || '', date, prep: o.prep || null, driver: null, dock: null,
+    pallets: 0, parcels: o.missing.reduce((a, m) => a + m.qte, 0) || 0, bulk: false, bulkNote: '', ducts: [], status: 'todo', missing: [], err: false, errNote: '', resolved: false, photos: [],
     comment: note, from: o.num, history: [{ ts: Date.now(), action: 'Complément de ' + o.num, by: 'Moi' }] }] }))
   return num
 }

@@ -11,6 +11,7 @@ function Group({ title, kind, list }) {
       {list.map((p) => (
         <div key={p.id} className="card" style={{ flexDirection: 'row', alignItems: 'center', opacity: p.on ? 1 : 0.5 }}>
           <input defaultValue={p.name} aria-label={'Nom ' + p.name} onBlur={(e) => e.target.value.trim() && editTeam(kind, (l) => l.map((x) => (x.id === p.id ? { ...x, name: e.target.value.trim() } : x)))} />
+          {kind === 'preps' && <button className={'chip' + (p.resp ? ' on' : '')} data-resp={p.name} onClick={() => editTeam(kind, (l) => l.map((x) => ({ ...x, resp: x.id === p.id ? !x.resp : false })))}>Resp.</button>}
           <button className="chip" onClick={() => editTeam(kind, (l) => l.map((x) => (x.id === p.id ? { ...x, on: !x.on } : x)))}>{p.on ? 'Actif' : 'Inactif'}</button>
         </div>))}
       <div className="btns"><input placeholder="Ajouter…" value={n} onChange={(e) => setN(e.target.value)} style={{ flex: 3 }} />
@@ -26,7 +27,7 @@ export function Team({ s, date, onStats }) {
       <div className="sec"><span>Qui a préparé quoi</span></div>
       <div className="list"><div className="card">
         {s.team.preps.filter((p) => p.on).map((p) => { const os = day.filter((o) => o.prep === p.id); return (
-          <div key={p.id} className="row"><b>{p.name}</b><span className="meta">{os.length ? os.map((o) => o.num).join(', ') : '—'}</span></div>) })}
+          <div key={p.id} className="row"><b>{p.name}</b><span className="meta">{os.length ? os.map((o) => o.client).join(', ') : '—'}</span></div>) })}
       </div></div>
       <div className="list" style={{ paddingBottom: 0, marginTop: 10 }}><button className="btn ghost" data-stats onClick={onStats}>Statistiques de la semaine</button></div>
       <Group title="Préparateurs" kind="preps" list={s.team.preps} />
@@ -63,7 +64,7 @@ export function Settings({ s, date, onStats, onSummary }) {
         <button className="btn bad" data-clear onClick={() => { if (confirm('Vider toutes les commandes ?')) { resetDemo(); toast('Données vidées') } }}>Vider les données de démo</button>
       </div>
       <div className="sec"><span>À propos</span></div>
-      <div className="list"><div className="card meta">DockFlow v1.1 — suivi des livraisons du dépôt. Données stockées uniquement sur cet appareil. Toutes les données de démo sont fictives.</div></div>
+      <div className="list"><div className="card meta">DockFlow v1.2 — suivi des livraisons du dépôt. Données stockées uniquement sur cet appareil. Toutes les données de démo sont fictives.</div></div>
     </div>
   )
 }

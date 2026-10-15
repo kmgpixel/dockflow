@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, animate } from 'motion/react'
 
-export const spring = { type: 'spring', stiffness: 380, damping: 36 }
+export const spring = { type: 'spring', stiffness: 650, damping: 44 }
 
 export function Sheet({ open, onClose, children }) {
   return (
     <AnimatePresence>
       {open && (
         <>
-          <motion.div className="ov" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+          <motion.div className="ov" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }} />
           <motion.div className="sheet" role="dialog" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={spring}
             drag="y" dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.6 }} dragListener={false}
             onDragEnd={(e, i) => { if (i.offset.y > 120 || i.velocity.y > 600) onClose() }}
@@ -38,7 +38,7 @@ export function Count({ value }) {
   const [v, setV] = useState(0)
   const prev = useRef(0)
   useEffect(() => {
-    const c = animate(prev.current, value, { duration: 0.6, onUpdate: (x) => setV(Math.round(x)) })
+    const c = animate(prev.current, value, { duration: 0.25, onUpdate: (x) => setV(Math.round(x)) })
     prev.current = value
     return () => c.stop()
   }, [value])
@@ -51,7 +51,7 @@ export function Toaster() {
   const [m, setM] = useState(null)
   const tm = useRef(null)
   useEffect(() => { toastFn = (x, undo) => { clearTimeout(tm.current); setM({ x, undo }); tm.current = setTimeout(() => setM(null), undo ? 5000 : 2200) } }, [])
-  return <AnimatePresence>{m && <motion.div key={m.x} className="toast" initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}>
+  return <AnimatePresence>{m && <motion.div key={m.x} className="toast" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
     <span>{m.x}</span>{m.undo && <button className="undo" data-undo onClick={() => { clearTimeout(tm.current); setM(null); m.undo() }}>Annuler</button>}</motion.div>}</AnimatePresence>
 }
 

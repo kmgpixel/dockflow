@@ -1,19 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Card } from './Card'
 import { Count, Icon } from './ui'
 import { Alerts } from './Alerts'
 import { GlobalSearch } from './GlobalSearch'
 import { withUndo } from './undo'
-import { STATUS, today, addDays, hasIssue, advance } from './store'
+import { STATUS, NEXT, today, addDays, hasIssue, advance } from './store'
 
 const fmt = (d) => new Date(d + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 
-export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary }) {
+export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary, onFinish }) {
   const [q, setQ] = useState(''), [fs, setFs] = useState(null), [fp, setFp] = useState(null)
   const t = today()
   const list = useMemo(() => s.orders.filter((o) => o.date === date && (!fs || o.status === fs) && (!fp || o.prep === fp) &&
-    (!q || (o.num + o.client).toLowerCase().includes(q.toLowerCase()))), [s.orders, date, fs, fp, q])
+    (!q || (o.num + o.client + (o.city || '')).toLowerCase().includes(q.toLowerCase()))), [s.orders, date, fs, fp, q])
   const all = s.orders.filter((o) => o.date === date && o.status !== 'cancel')
   const n = (f) => all.filter(f).length
   const pl = (v, a, b) => (v > 1 ? b : a)
@@ -22,6 +22,7 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary }) 
   const seg = [['#9a9ea6', n((o) => o.status === 'todo')], ['#2f6fdb', n((o) => ['prep', 'wait'].includes(o.status))], ['#1f9d6b', n((o) => o.status === 'ready')], ['#0e8f9a', n((o) => o.status === 'loaded')], ['#16181b', n((o) => ['go', 'done'].includes(o.status))]]
   const days = [[t, 'Auj.'], [addDays(t, 1), 'Demain'], [addDays(t, 2), 'J+2']]
   const custom = !days.some((d) => d[0] === date)
+  const advanceCard = useCallback((o) => (NEXT[o.status] === 'ready' ? onFinish(o) : withUndo('Statut mis à jour', () => advance(o))), [onFinish])
   const [x0, setX0] = useState(null)
   const sw = (dx) => { if (Math.abs(dx) > 70) setDate(addDays(date, dx < 0 ? 1 : -1)) }
   return (
@@ -41,7 +42,7 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary }) 
       </div>
       <div className="kpi">{k.map(([l, v], i) => <div key={l} className={i === 3 ? 'pb' + (v ? ' bad' : '') : ''}><strong><Count value={v} /></strong><span>{l}</span>{i === 3 && <small>tous statuts</small>}</div>)}</div>
       <div className="bar">{seg.map(([c, v], i) => <i key={i} style={{ flex: v, background: c }} />)}</div>
-      <div className="search"><input placeholder="Rechercher n° ou client" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+      <div className="search"><input placeholder="Rechercher n°, client ou ville" value={q} onChange={(e) => setQ(e.target.value)} /></div>
       <div className="filters">
         {Object.entries(STATUS).slice(0, 5).map(([k2, v]) => <button key={k2} className={'chip' + (fs === k2 ? ' on' : '')} onClick={() => setFs(fs === k2 ? null : k2)}>{v.l}</button>)}
         {s.team.preps.filter((p) => p.on).map((p) => <button key={p.id} className={'chip' + (fp === p.id ? ' on' : '')} onClick={() => setFp(fp === p.id ? null : p.id)}>{p.name.split(' ')[0]}</button>)}
@@ -50,9 +51,9 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary }) 
       <div className="sec"><span>Commandes</span><span style={{ fontFamily: 'var(--mono)' }}>{list.length}</span></div>
       <div className="list">
         <AnimatePresence initial={false} mode="popLayout">
-          {list.map((o) => <Card key={o.id} o={o} team={s.team} onOpen={onOpen} onProblem={onProblem} onMenu={onMenu} onAdvance={(o) => withUndo('Statut mis à jour', () => advance(o))} />)}
+          {list.map((o) => <Card key={o.id} o={o} team={s.team} onOpen={onOpen} onProblem={onProblem} onMenu={onMenu} onAdvance={advanceCard} />)}
         </AnimatePresence>
-        {!list.length && <motion.div className="meta" style={{ textAlign: 'center', padding: 30 }}>Aucune commande. Touchez + pour en ajouter.</motion.div>}
+        {!list.length && <div className="meta" style={{ textAlign: 'center', padding: 30 }}>Aucune commande. Touchez + pour en ajouter.</div>}
       </div>
       <GlobalSearch s={s} q={q} date={date} onOpen={onOpen} />
     </div>
