@@ -90,7 +90,7 @@ textarea{resize:none;min-height:88px}
 .alert .cli2{font-weight:700}.alert .why{grid-column:1/3;font-size:13px;color:var(--bad);font-weight:600}
 .toast{display:flex;align-items:center;gap:12px;justify-content:center}
 .toast .undo{min-height:36px;padding:0 12px;border-radius:99px;background:var(--acc);color:#fff;font-weight:700;font-size:13px}
-.sumtxt{min-height:300px;field-sizing:content;max-height:60vh;font:12.5px/1.45 var(--mono)}
+.sumtxt{min-height:300px;height:auto;flex-shrink:0;font:12.5px/1.45 var(--mono)}
 .xbtn{width:44px;height:44px;font-size:28px;font-weight:300;color:var(--mut)}
 .sb{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 .back{display:flex;align-items:center;gap:2px;color:var(--acc);font-weight:700;padding:0}.back svg{width:20px;height:20px}

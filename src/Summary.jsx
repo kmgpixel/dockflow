@@ -13,7 +13,7 @@ export function SummarySheet({ open, onClose, s, date }) {
   return (
     <Sheet open={open} onClose={() => { setTxt(''); onClose() }}>
       <h2>Résumé du soir</h2>
-      <textarea className="sumtxt" data-summary-text value={text} onChange={(e) => setTxt(e.target.value)} aria-label="Texte du résumé" />
+      <textarea className="sumtxt" data-summary-text ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px" } }} value={text} onChange={(e) => setTxt(e.target.value)} aria-label="Texte du résumé" />
       <div className="btns">
         <button className="btn acc" data-copy onClick={copy}>Copier</button>
         {navigator.share && <button className="btn" data-share onClick={share}>Partager</button>}
