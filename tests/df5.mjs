@@ -1,0 +1,73 @@
+import puppeteer from 'puppeteer-core'; import fs from 'fs'
+const C='/Volumes/KoulèKréyol/workspace/DockFlow/captures/v1.2/'; fs.mkdirSync(C,{recursive:true})
+const b=await puppeteer.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:'new'})
+const p=await b.newPage(); const errs=[]
+p.on('console',m=>{if(m.type()==='error')errs.push(m.text())}); p.on('pageerror',e=>errs.push('PAGE '+e.message))
+await p.setViewport({width:390,height:844,deviceScaleFactor:2,isMobile:true,hasTouch:true})
+const R=[]; const ok=(n,v,x='')=>R.push((v?'PASS ':'FAIL ')+n+' '+x)
+const sl=ms=>new Promise(r=>setTimeout(r,ms))
+const txt=()=>p.evaluate(()=>document.body.innerText.replace(/\u00a0/g,' '))
+const clickT=(t,sel='button')=>p.evaluate((t,sel)=>{const e=[...document.querySelectorAll(sel)].find(x=>x.innerText.trim().startsWith(t));if(e){e.click();return true}return false},t,sel)
+const box=async n=>p.evaluate(n=>{const e=document.querySelector(`[data-card="${n}"] .c`);e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}},n)
+const swipe=async(n,dx)=>{await sl(300);const bx=await box(n);await sl(200);const sx=dx>0?bx.x+40:bx.x+bx.w-40,y=bx.y+30
+ await p.touchscreen.touchStart(sx,y);for(let i=1;i<=12;i++){await p.touchscreen.touchMove(sx+dx/12*i,y);await sl(16)}await p.touchscreen.touchEnd();await sl(600)}
+const day=k=>p.evaluate(k=>document.querySelector(`.days button:nth-child(${k})`).click(),k)
+const tab=async t=>{await clickT(t,'nav button');await sl(500)}
+const rename=(from,to)=>p.evaluate((f,t)=>{const i=[...document.querySelectorAll('input')].find(x=>x.defaultValue===f);const s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;i.focus();s.call(i,t);i.dispatchEvent(new Event('input',{bubbles:true}));i.blur()},from,to)
+const T='http://localhost:4180/dockflow/'
+await p.goto(T,{waitUntil:'networkidle0'}); await sl(800)
+// état propre : démo, puis une commande prête répartissable
+await p.evaluate(async()=>{const r=indexedDB.open('keyval-store');await new Promise(z=>r.onsuccess=z)})
+const id=await p.evaluate(()=>{const S=window.__df?.getState?.();return !!S})
+// créer via l'UI : nouvelle commande + fin de prépa (3 pal, 2 colis, 10 × Ø800 3 m, vrac)
+await p.evaluate(()=>document.querySelector('.tabbar .plus').click()); await sl(500)
+await p.click('input[aria-label=Numéro]'); await p.keyboard.type('9100')
+await p.type('input[aria-label=Client]','Atelier Durand'); await p.type('input[aria-label=Ville]','Vienne'); await p.click('[data-time="08:00"]')
+await p.evaluate(()=>[...document.querySelectorAll('.sheet button')].find(b=>/^Ajouter/.test(b.innerText)).click()); await sl(700)
+await day(2); await sl(400)
+await swipe('SO-L9100',180); await swipe('SO-L9100',180); await sl(400)
+const set=(lbl,n)=>p.evaluate(async(lbl,n)=>{for(let i=0;i<n;i++){document.querySelector(`[aria-label="Plus ${lbl}"]`).click();await new Promise(r=>setTimeout(r,30))}},lbl,n)
+await set('palettes',3); await set('colis',2)
+await p.evaluate(()=>[...document.querySelectorAll('.sheet button')].find(b=>/diamètre/i.test(b.innerText))?.click()); await sl(200)
+await p.evaluate(()=>{const d=document.querySelector('[data-duct]');d.querySelector('select')&&(()=>{const s=d.querySelector('select');Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(s,'800');s.dispatchEvent(new Event('change',{bubbles:true}))})()}); await sl(100)
+await p.evaluate(async()=>{const b=document.querySelector('[data-duct] [aria-label^="Plus"]');for(let i=0;i<9;i++){b.click();await new Promise(r=>setTimeout(r,30))}})
+await p.click('[data-bulk]'); await p.type('input[aria-label="Description du vrac"]','accessoires')
+const prev=await p.evaluate(()=>document.querySelector('[data-packprev]')?.innerText.replace(/\u00a0/g,' '))
+await p.click('[data-allok]'); await sl(700)
+ok('commande prête à répartir',/3 pal\. · 2 colis/.test(prev)&&/Ø800/.test(prev)&&/vrac/.test(prev),prev)
+// Camions → Répartir
+await tab('Camions'); await sl(400)
+ok('bouton Répartir présent',await p.evaluate(()=>!!document.querySelector('[data-split="SO-L9100"]')))
+await p.click('[data-split="SO-L9100"]'); await sl(700)
+const er0=await p.evaluate(()=>document.querySelector('[data-split-err]')?.innerText||'')
+ok('validation bloquée sans livreurs',/livreur à choisir/.test(er0)&&await p.evaluate(()=>document.querySelector('[data-split-ok]').disabled),er0)
+await p.click('[data-part="1"] [data-part-driver="Express Nord"]'); await p.click('[data-part="2"] [data-part-driver="Sofiane"]'); await sl(200)
+// camion 2 : 1 palette + 2 colis (camion 1 garde 2 pal) ; gaines + vrac dans camion 2
+await p.click('[data-part="1"] [aria-label="Moins palettes 1"]'); await p.click('[data-part="2"] [aria-label="Plus palettes 2"]')
+const er1=await p.evaluate(()=>document.querySelector('[data-split-err]')?.innerText||'')
+ok('contrôle "en trop"/"reste"',/reste 0|reste|en trop|^$/.test(er1),er1)
+await p.evaluate(async()=>{for(let i=0;i<2;i++){document.querySelector('[data-part="1"] [aria-label="Moins colis 1"]').click();await new Promise(r=>setTimeout(r,30))}for(let i=0;i<2;i++){document.querySelector('[data-part="2"] [aria-label="Plus colis 2"]').click();await new Promise(r=>setTimeout(r,30))}})
+await p.evaluate(()=>{const l=document.querySelector('[data-duct-line="0"]');[...l.querySelectorAll('button')].find(b=>b.innerText==='C2').click()})
+await p.evaluate(()=>[...document.querySelectorAll('.sheet button')].find(b=>b.innerText==='Camion 2').click()); await sl(300)
+const er2=await p.evaluate(()=>document.querySelector('[data-split-err]')?.innerText||'')
+await p.screenshot({path:C+'repartir.png'})
+ok('tout réparti, validation possible',er2===''&&await p.evaluate(()=>!document.querySelector('[data-split-ok]').disabled),er2)
+await p.click('[data-split-ok]'); await sl(800)
+const t1=await p.evaluate(()=>document.querySelector('[data-truck="Express Nord"]')?.innerText.replace(/\u00a0/g,' ')||'')
+const t2=await p.evaluate(()=>document.querySelector('[data-truck="Sofiane"]')?.innerText.replace(/\u00a0/g,' ')||'')
+ok('camion 1 : partie 1/2',/Atelier Durand/.test(t1)&&/Partie 1\/2/.test(t1),t1.replace(/\n/g,'|'))
+ok('camion 2 : partie 2/2',/Atelier Durand/.test(t2)&&/Partie 2\/2/.test(t2),t2.replace(/\n/g,'|'))
+await p.screenshot({path:C+'camions-reparti.png'})
+// PDF de chaque camion : contenu de sa partie seulement
+await p.evaluate(()=>{Object.defineProperty(navigator,'canShare',{value:undefined,configurable:true});HTMLAnchorElement.prototype.click=function(){}})
+const pdfOf=async(n)=>{await p.click(`[data-truck="${n}"] [data-pdf]`);await sl(1200);return p.evaluate(()=>window.__pdfText||'')}
+const p1=await pdfOf('Express Nord'), p2=await pdfOf('Sofiane')
+ok('PDF camion 1 : 2 pal, pas de gaines',/PARTIELLE 1\/2/.test(p1)&&/2 pal\./.test(p1)&&!/Ø800/.test(p1),'')
+ok('PDF camion 2 : 1 pal, 2 colis, 10 × Ø800, vrac',/PARTIELLE 2\/2/.test(p2)&&/1 pal\./.test(p2)&&/2 colis/.test(p2)&&/10 × Ø800/.test(p2)&&/vrac/.test(p2),'')
+// annuler la répartition
+await p.evaluate(()=>[...document.querySelectorAll('.sheet button')].length)
+// persistance
+await p.reload({waitUntil:'networkidle0'}); await sl(900); await tab('Camions')
+ok('persistance des 2 parties',/Partie 1\/2/.test(await txt())&&/Partie 2\/2/.test(await txt()))
+ok('zéro erreur console',errs.length===0,errs.join(' / '))
+console.log(R.join('\n')); await b.close()

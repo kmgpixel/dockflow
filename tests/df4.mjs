@@ -98,7 +98,10 @@ const tr2=await p.evaluate(()=>document.querySelector('[data-truck="Express Nord
 ok('camion chargé avec livraison demain',/Chargé le/.test(tr2)&&/Livraisons? du/.test(tr2)&&/Client Quatre/.test(tr2),tr2.replace(/\n/g,'|'))
 // ---- PDF
 await p.evaluate(()=>{Object.defineProperty(navigator,'canShare',{value:undefined,configurable:true});HTMLAnchorElement.prototype.click=function(){}})
+await p.evaluate(()=>{const b=document.querySelector('[data-pdf]');b.scrollIntoView({block:'center'})}); await sl(300)
+console.log('DBGHIT',await p.evaluate(()=>{const b=document.querySelector('[data-pdf]').getBoundingClientRect();const e=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return e.className+'|'+e.innerText?.slice(0,20)}))
 await p.click('[data-pdf]'); await sl(1500)
+console.log('DBGPDF',JSON.stringify(errs),await p.evaluate(()=>[...document.querySelectorAll('[data-pdf]')].length), await p.evaluate(()=>!!window.__lastPdf))
 const pdf=await p.evaluate(async()=>{const l=window.__lastPdf;const a=new Uint8Array(await l.blob.arrayBuffer());return{h:String.fromCharCode(...a.slice(0,4)),n:a.length,t:window.__pdfText,b64:await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(',')[1]);f.readAsDataURL(l.blob)})}})
 fs.writeFileSync(C+'bon-chargement.pdf',Buffer.from(pdf.b64,'base64'))
 ok('PDF commence par %PDF',pdf.h==='%PDF',pdf.n+' octets')

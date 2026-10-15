@@ -44,7 +44,7 @@ function CardBase({ o, team, onOpen, onProblem, onMenu, onAdvance }) {
         <div className="cli">{o.client}</div>
         <div className="st">{issue ? 'Problème' : st.l}</div>
         <div className="where">{where(o) || 'Ville non renseignée'}{o.status === 'moved' ? ' · → ' + fmtDM(o.date) : ''}</div>
-        <div className="num">{o.num}</div>
+        <div className="num">{o.num}{o.part ? ' · Partie ' + o.part.i + '/' + o.part.n : ''}</div>
         <div className="meta">{[prepName(team, o.prep), pack, o.dock && team.docks.find((d) => d.id === o.dock)?.name, o.driver && team.drivers.find((d) => d.id === o.driver)?.name].filter(Boolean).join(' · ')}</div>
         {issue ? (
           <div className="flag">

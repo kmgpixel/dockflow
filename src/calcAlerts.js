@@ -19,6 +19,9 @@ export function alerts(s, now = Date.now()) {
       if (['todo', 'prep', 'wait'].includes(o.status)) out.push({ o, kind: 'tm-np', txt: 'Livraison demain non prête' })
       if (o.status === 'ready') out.push({ o, kind: 'tm-nl', txt: 'Livraison demain prête mais non chargée' })
     }
+    // Livraison partielle : une partie non livrée alors qu'une autre l'est
+    if (o.part && o.status === 'fail' && s.orders.some((x) => x.part?.g === o.part.g && x.status === 'done'))
+      out.push({ o, kind: 'part', txt: 'Livraison partielle : partie ' + o.part.i + '/' + o.part.n + ' non livrée' })
     if (hasIssue(o) && o.missing.length) {
       const ts = lastTs(o, /^Problème signalé/)
       if (ts && now - ts > H24) out.push({ o, kind: 'miss', txt: 'Manquant non résolu depuis ' + age(now - ts) })

@@ -33,7 +33,7 @@ function row(d, y, o, s) {
   d.setFontSize(11); d.text((o.city || 'Ville non renseignée') + (o.time ? '   ' + fmtH(o.time) : ''), tx, yy + 6)
   pill(d, W - M - 38, y + 3, STATUS[o.status].l, stColor(STATUS[o.status].c))
   d.setFont('courier', 'normal'); d.setFontSize(8); d.setTextColor(...MUT)
-  d.text(o.num + '  ·  ' + prepName(s.team, o.prep), tx, yy + 11)
+  d.text(o.num + (o.part ? '  ·  LIVRAISON PARTIELLE ' + o.part.i + '/' + o.part.n : '') + '  ·  ' + prepName(s.team, o.prep), tx, yy + 11)
   d.setFont('helvetica', 'normal'); d.setFontSize(9); d.setTextColor(...INK)
   if (lines.length) d.text(lines, tx, yy + 16)
   else { d.setTextColor(...MUT); d.text('Conditionnement non saisi', tx, yy + 16) }

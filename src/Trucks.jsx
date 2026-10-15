@@ -7,6 +7,8 @@ import { formatPack, fmtH, formatPackUI } from './pack'
 import { dockName } from './people'
 import { loadPdf, deliver } from './pdf'
 import { withUndo } from './undo'
+import { SplitSheet } from './SplitSheet'
+import { partLabel } from './split'
 
 function SigPad({ onSave }) {
   const ref = useRef(), drawing = useRef(false), dirty = useRef(false)
@@ -28,6 +30,7 @@ function SigPad({ onSave }) {
 export function Trucks({ s }) {
   const t0 = today(), tm = addDays(t0, 1), date = t0
   const [pickFor, setPickFor] = useState(null), [dock, setDock] = useState(''), [sel, setSel] = useState([]), [drv, setDrv] = useState('')
+  const [splitFor, setSplitFor] = useState(null)
   const [sigFor, setSigFor] = useState(null), [back, setBack] = useState(null), [leaving, setLeaving] = useState(null)
   const ready = toLoad(s, t0, tm)
   const day = s.orders.filter((o) => o.status !== 'cancel')
@@ -47,7 +50,8 @@ export function Trucks({ s }) {
         {[[t0, 'Livraison aujourd\'hui'], [tm, 'Livraison demain']].map(([d, l]) => { const g = ready.filter((o) => o.date === d); return g.length ? (
           <div key={d} data-ready-group={d}><div className="grp">{l} · {g.length}</div>
             {g.map((o) => <div key={o.id} className="card" style={{ marginTop: 8 }}><div className="row"><b>{o.client}</b><span className="num">{fmtH(o.time)}</span></div>
-              <div className="meta">{o.city} · {o.num} · {formatPackUI(o)}</div></div>)}</div>) : null })}
+              <div className="meta">{o.city} · {o.num} · {formatPackUI(o)}</div>
+              <button className="btn ghost" data-split={o.num} style={{ marginTop: 6 }} onClick={() => setSplitFor(o)}>Répartir sur plusieurs camions</button></div>)}</div>) : null })}
         {!day.some((o) => o.driver && ['loaded', 'go'].includes(o.status)) && (<>
           <div className="sec" style={{ padding: '14px 6px 0' }}><span>Aucun camion chargé · livreurs actifs</span></div>
           {drivers.map((dr) => { const last = lastDock(s, dr.id)
@@ -68,7 +72,7 @@ export function Trucks({ s }) {
               <div className="meta">{ld ? 'Chargé le ' + fmtDM(new Date(ld).toISOString().slice(0, 10)) + ' à ' + hhmm(ld) + ' · ' : ''}Livraisons du {dates.map(fmtDM).join(', ')}</div>
               <AnimatePresence>{os.map((o) => (
                 <motion.div key={o.id} layout className="meta" animate={leaving === dr.id ? { y: -6 } : { y: 0 }} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span><b>{o.client}</b> · {o.city} {fmtH(o.time)} <span className="num">{o.num}</span></span><span style={{ color: STATUS[o.status].c, fontWeight: 700 }}>{STATUS[o.status].l}</span></motion.div>))}</AnimatePresence>
+                  <span><b>{o.client}</b> · {o.city} {fmtH(o.time)} <span className="num">{o.num}{o.part ? ' · ' + partLabel(o) : ''}</span></span><span style={{ color: STATUS[o.status].c, fontWeight: 700 }}>{STATUS[o.status].l}</span></motion.div>))}</AnimatePresence>
               {dep && <div className="meta">Départ à {hhmm(dep)}{s.sigs[dr.id + date] ? ' · signé' : ''}</div>}
               <div className="btns">
                 {loaded.length > 0 && <button className="btn ghost" onClick={() => setSigFor(dr)}>{s.sigs[dr.id + date] ? 'Signature faite' : 'Signature'}</button>}
@@ -92,6 +96,7 @@ export function Trucks({ s }) {
         <button className="btn acc" data-confirm disabled={!sel.length || !drv} onClick={() => { const dn = nameOf(drivers, drv); withUndo((sel.length > 1 ? sel.length + ' commandes chargées' : 'Commande chargée') + ' · ' + dn, () => loadTo(sel, drv, dock || null)); setPickFor(null) }}>Charger{sel.length ? ' (' + sel.length + ')' : ''}</button>
         <button className="btn ghost" data-cancel onClick={() => setPickFor(null)}>Annuler</button>
       </Sheet>
+      <SplitSheet o={splitFor ? s.orders.find((x) => x.id === splitFor.id) : null} onClose={() => setSplitFor(null)} team={s.team} key={'sp' + (splitFor?.id || '')} />
       <Sheet open={!!sigFor} onClose={() => setSigFor(null)}>
         <h2>Signature · {sigFor?.name}</h2>
         <SigPad onSave={(d) => { saveSig(sigFor.id, date, d); setSigFor(null); toast('Signature enregistrée') }} />
