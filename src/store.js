@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { get, set } from 'idb-keyval'
+import { seedPast } from './seedPast'
 
 export const STATUS = {
   todo: { l: 'À préparer', c: '#9a9ea6', p: 0 },
@@ -39,14 +40,15 @@ function seed() {
   const orders = [
     mk('C-2402', 'Valence — Clim Services', t, 'p0', 'prep', 2, 14),
     mk('C-2407', 'Lyon 7e — Aéro Bât', t, 'p1', 'prep', 1, 6, { missing: [{ produit: 'Coude 90° Ø160', qte: 4 }] }),
-    mk('C-2413', "Grenoble — Ventil'Alpes", t, 'p2', 'wait', 3, 22),
+    mk('C-2413', "Grenoble — Ventil'Alpes", t, 'p2', 'wait', 3, 22, { history: [{ ts: Date.now() - 40 * 36e5, action: 'Commande créée', by: 'Démo' }, { ts: Date.now() - 30 * 36e5, action: 'Statut → Attente client', by: 'Moi' }] }),
     mk('C-2404', 'Vienne — Atelier Durand', t, 'p0', 'ready', 3, 18),
     mk('C-2409', 'Annecy — Thermo Savoie', t, 'p1', 'todo', 2, 9),
     mk('C-2411', 'Chambéry — Sanitaire Plus', t, null, 'todo', 1, 4),
     mk('C-2415', 'Bourg — Plomberie Ain', tm, 'p2', 'todo', 4, 30),
     mk('C-2416', 'Saint-Étienne — Froid & Co', tm, null, 'todo', 2, 11),
   ]
-  return { orders, team, theme: 'auto', sigs: {}, departs: {}, v: 1 }
+  orders.push(...seedPast(t, addDays, uid))
+  return { orders, team, theme: 'auto', sigs: {}, departs: {}, v: 2 }
 }
 
 let state = null
@@ -97,3 +99,15 @@ export const depart = (driver, date) => setState((s) => {
 export const saveSig = (driver, date, data) => setState((s) => ({ ...s, sigs: { ...s.sigs, [driver + date]: data } }))
 export const setTheme = (theme) => setState((s) => ({ ...s, theme }))
 export const editTeam = (kind, fn) => setState((s) => ({ ...s, team: { ...s.team, [kind]: fn(s.team[kind]) } }))
+
+export function duplicateOrder(o) {
+  const s = getState()
+  let num = o.num + '-C', k = 2
+  while (s.orders.some((x) => x.num === num)) num = o.num + '-C' + k++
+  const date = addDays(today(), 1)
+  const note = o.missing.length ? 'Manquants : ' + o.missing.map((m) => m.qte + ' × ' + m.produit).join(', ') : ''
+  setState((st) => ({ ...st, orders: [...st.orders, { id: uid(), num, client: o.client, date, prep: o.prep || null, driver: null, dock: null,
+    pallets: 1, parcels: o.missing.reduce((a, m) => a + m.qte, 0) || 1, status: 'todo', missing: [], err: false, errNote: '', resolved: false, photos: [],
+    comment: note, from: o.num, history: [{ ts: Date.now(), action: 'Complément de ' + o.num, by: 'Moi' }] }] }))
+  return num
+}

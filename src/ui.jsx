@@ -46,11 +46,13 @@ export function Count({ value }) {
 }
 
 let toastFn = () => {}
-export const toast = (m) => toastFn(m)
+export const toast = (m, undo) => toastFn(m, undo)
 export function Toaster() {
   const [m, setM] = useState(null)
-  useEffect(() => { toastFn = (x) => { setM(x); setTimeout(() => setM(null), 2200) } }, [])
-  return <AnimatePresence>{m && <motion.div className="toast" initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}>{m}</motion.div>}</AnimatePresence>
+  const tm = useRef(null)
+  useEffect(() => { toastFn = (x, undo) => { clearTimeout(tm.current); setM({ x, undo }); tm.current = setTimeout(() => setM(null), undo ? 5000 : 2200) } }, [])
+  return <AnimatePresence>{m && <motion.div key={m.x} className="toast" initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}>
+    <span>{m.x}</span>{m.undo && <button className="undo" data-undo onClick={() => { clearTimeout(tm.current); setM(null); m.undo() }}>Annuler</button>}</motion.div>}</AnimatePresence>
 }
 
 export const Icon = ({ n }) => {
@@ -58,6 +60,9 @@ export const Icon = ({ n }) => {
     day: 'M4 5h16v15H4zM4 10h16M9 3v4M15 3v4',
     truck: 'M2 6h12v10H2zM14 10h4l3 3v3h-7M6 19a2 2 0 100-4 2 2 0 000 4zM17 19a2 2 0 100-4 2 2 0 000 4z',
     team: 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3 3-5 6-5s6 2 6 5M17 8a3 3 0 010 6M21 20c0-2-1-4-3-4.5',
+    cal: 'M4 6h16v14H4zM4 10h16M9 3v4M15 3v4M8 14h2M12 14h2M16 14h.01',
+    back: 'M15 5l-7 7 7 7',
+    stats: 'M5 20V11M12 20V4M19 20v-6',
     set: 'M12 15a3 3 0 100-6 3 3 0 000 6zM19 12l2-1-2-4-2 1-2-1-1-2H9L8 7 6 8 4 7l-2 4 2 1v2l-2 1 2 4 2-1 2 1 1 2h4l1-2 2-1 2 1 2-4-2-1z',
   }[n]
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={p} /></svg>

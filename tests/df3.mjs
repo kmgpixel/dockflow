@@ -1,0 +1,82 @@
+import puppeteer from 'puppeteer-core'; import fs from 'fs'
+const C='/Volumes/KoulèKréyol/workspace/DockFlow/captures/v1.1/'; fs.mkdirSync(C,{recursive:true})
+const b=await puppeteer.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:'new'})
+const p=await b.newPage(); const errs=[]
+p.on('console',m=>{if(m.type()==='error')errs.push(m.text())}); p.on('pageerror',e=>errs.push('PAGE '+e.message))
+await p.setViewport({width:390,height:844,deviceScaleFactor:2,isMobile:true,hasTouch:true})
+const R=[]; const ok=(n,v,x='')=>R.push((v?'PASS ':'FAIL ')+n+' '+x)
+const sl=ms=>new Promise(r=>setTimeout(r,ms))
+const txt=()=>p.evaluate(()=>document.body.innerText)
+const clickT=(t,sel='button')=>p.evaluate((t,sel)=>{const e=[...document.querySelectorAll(sel)].find(x=>x.innerText.trim().startsWith(t));if(e){e.click();return true}return false},t,sel)
+const card=n=>p.evaluate(n=>document.querySelector(`[data-card="${n}"]`)?.innerText||'',n)
+const box=async n=>p.evaluate(n=>{const e=document.querySelector(`[data-card="${n}"] .c`);e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}},n)
+const swipe=async(n,dx)=>{await sl(300);const bx=await box(n);await sl(200);const sx=dx>0?bx.x+40:bx.x+bx.w-40,y=bx.y+30
+ await p.touchscreen.touchStart(sx,y);for(let i=1;i<=12;i++){await p.touchscreen.touchMove(sx+dx/12*i,y);await sl(16)}await p.touchscreen.touchEnd();await sl(600)}
+const tab=async t=>{await clickT(t,'nav button');await sl(500)}
+await p.emulateMediaFeatures([{name:'prefers-color-scheme',value:'light'}])
+await p.goto('http://localhost:4180/dockflow/',{waitUntil:'networkidle0'});await sl(900)
+// 1 dernière carte visible
+const vis=await p.evaluate(async()=>{const sc=document.querySelector('.scroll');sc.scrollTop=sc.scrollHeight;await new Promise(r=>setTimeout(r,500))
+ const cs=[...document.querySelectorAll('[data-card]')];const l=cs[cs.length-1].getBoundingClientRect();const t=document.querySelector('.tabbar').getBoundingClientRect();return{b:l.bottom,t:t.top}})
+ok('dernière carte au-dessus de la barre',vis.b<=vis.t-4,JSON.stringify(vis))
+await p.evaluate(()=>document.querySelector('.scroll').scrollTop=0);await sl(300)
+// pluriel / alerte
+const t0=await txt()
+ok('alerte attente >24h visible',/À relancer/i.test(t0)&&/Attente accord client depuis/i.test(t0)&&/C-2413/.test(await p.evaluate(()=>document.querySelector('[data-alerts]')?.innerText||'')))
+const al=await p.evaluate(()=>document.querySelector('[data-alerts]').innerText.replace(/\n/g,'|'));console.log(al)
+ok('alerte prête non chargée la veille',/Prête mais non chargée/.test(al))
+ok('badge alertes',+await p.evaluate(()=>document.querySelector('[data-alertcount]')?.innerText)>=2)
+ok('accord pluriel Problème',/\bProblèmes?\b/.test(t0)&&/tous statuts/.test(t0))
+ok('pas d\'emoji calendrier',!/📅/.test(t0)&&await p.evaluate(()=>!!document.querySelector('.calbtn svg')))
+await p.screenshot({path:C+'alertes.png'})
+await p.screenshot({path:C+'jour-clair.png'})
+// undo
+const stt=n=>p.evaluate(n=>document.querySelector(`[data-card="${n}"] .st`).innerText,n)
+const before=await stt('C-2409'); await swipe('C-2409',180)
+const mid=await stt('C-2409'); ok('swipe change statut',mid==='En préparation'&&before==='À préparer',before+'>'+mid)
+await p.click('[data-undo]');await sl(600)
+const aft=await stt('C-2409');ok('Annuler remet le statut précédent',aft==='À préparer',aft)
+// recherche globale
+await p.type('.search input','C-23');await sl(500)
+const g=await p.evaluate(()=>document.querySelector('[data-global]')?.innerText||'')
+ok('recherche globale trouve un autre jour',/C-23\d\d/.test(g),g.slice(0,60).replace(/\n/g,'|'))
+await p.evaluate(()=>{const i=document.querySelector('.search input');const s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;s.call(i,'');i.dispatchEvent(new Event('input',{bubbles:true}))});await sl(300)
+// duplication (appui long souris)
+const bx=await box('C-2407');await sl(300)
+await p.mouse.move(bx.x+80,bx.y+25);await p.mouse.down();await sl(800);await p.mouse.up();await sl(700)
+ok('menu appui long',/Dupliquer/.test(await txt()))
+await p.click('[data-dup]');await sl(800)
+await p.evaluate(()=>document.querySelector('.days button:nth-child(2)').click());await sl(600)
+const dup=await card('C-2407-C');ok('duplication créée demain avec réf.',/C-2407-C/.test(dup),dup.replace(/\n/g,'|'))
+await p.evaluate(()=>document.querySelector('.days button:nth-child(1)').click());await sl(400)
+// résumé
+await clickT('Résumé du soir');await sl(700)
+const sm=await p.evaluate(()=>document.querySelector('[data-summary-text]')?.value||'')
+ok('résumé généré non vide',sm.length>200&&/Livrées/.test(sm)&&/À suivre demain/.test(sm),sm.length+' car.')
+console.log(sm)
+await p.screenshot({path:C+'resume.png'})
+await clickT('Fermer');await sl(700)
+// stats
+await tab('Équipe');await p.click('[data-stats]');await sl(700)
+const st=await txt();ok('écran stats',/Statistiques/.test(st)&&/Non livrées par livreur/i.test(st)&&await p.evaluate(()=>document.querySelectorAll('.bcol').length===7))
+await p.screenshot({path:C+'stats.png'})
+// camions vide
+await tab('Camions');ok('camions vide: livreurs actifs',await p.evaluate(()=>document.querySelectorAll('[data-empty-driver]').length===6))
+await p.screenshot({path:C+'camions-vide.png'})
+// sheet charger : annuler
+await p.evaluate(()=>{});await tab('Jour')
+await p.evaluate(()=>document.querySelector('.days button:nth-child(1)').click())
+const rb=await box('C-2404');await p.touchscreen.tap(rb.x+80,rb.y+25);await sl(700);await p.mouse.click(195,40);await sl(600)
+await tab('Camions');await p.click('[data-charger]');await sl(700)
+ok('sheet charger: bouton Annuler',await p.evaluate(()=>!!document.querySelector('[data-cancel]')))
+await p.click('[data-cancel]');await sl(600)
+// chargement + annuler
+await p.click('[data-charger]');await sl(700);await p.click('[data-driver="Express Nord"]');await sl(600)
+ok('chargé',/Chargée/.test(await txt()))
+await p.click('[data-undo]');await sl(600)
+ok('annuler chargement',!/Chargée/.test(await txt())&&/aucun camion/i.test(await txt()))
+// sombre
+await p.emulateMediaFeatures([{name:'prefers-color-scheme',value:'dark'}]);await tab('Jour');await sl(500)
+await sl(2500);await p.screenshot({path:C+'jour-sombre.png'})
+ok('zéro erreur console',errs.length===0,errs.join(' / '))
+console.log(R.join('\n'));await b.close()

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Sheet, toast } from './ui'
 import { STATUS, loadTo, depart, saveSig, setStatus, postpone, nameOf, hhmm, addDays, getState } from './store'
 import { loadPdf, deliver } from './pdf'
+import { withUndo } from './undo'
 
 function SigPad({ onSave }) {
   const ref = useRef(), drawing = useRef(false), dirty = useRef(false)
@@ -39,6 +40,12 @@ export function Trucks({ s, date }) {
         <div className="sub">{ready.length} commande{ready.length > 1 ? 's' : ''} prête{ready.length > 1 ? 's' : ''} à charger</div></div>
       <div className="list" style={{ marginTop: 14 }}>
         <button className="btn acc" data-charger onClick={() => { setPickFor('x'); setSel(ready.map((o) => o.id)) }} disabled={!ready.length} style={{ opacity: ready.length ? 1 : 0.4 }}>Charger dans…</button>
+        {!day.some((o) => o.driver) && (<>
+          <div className="sec" style={{ padding: '14px 6px 0' }}><span>Aucun camion chargé · livreurs actifs</span></div>
+          {drivers.map((dr) => { const last = [...s.orders].filter((o) => o.driver === dr.id && o.dock).sort((a, b) => (a.date < b.date ? 1 : -1))[0]
+            return <div key={dr.id} className="card" data-empty-driver style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <b>{dr.name}</b><span className="meta">{last ? 'Dernier quai : ' + nameOf(s.team.docks, last.dock) : 'Quai libre'}</span></div> })}
+          <div className="meta" style={{ textAlign: 'center' }}>Marquez des commandes Prêtes, puis touchez « Charger dans… ».</div></>)}
         {drivers.map((dr) => {
           const os = day.filter((o) => o.driver === dr.id)
           if (!os.length) return null
@@ -51,9 +58,9 @@ export function Trucks({ s, date }) {
               <AnimatePresence>{os.map((o) => (
                 <motion.div key={o.id} layout className="meta" animate={leaving === dr.id ? { y: -6 } : { y: 0 }} style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span><b className="num">{o.num}</b> {o.client.split('—').pop()}</span><span style={{ color: STATUS[o.status].c, fontWeight: 700 }}>{STATUS[o.status].l}</span></motion.div>))}</AnimatePresence>
-              {dep && <div className="meta">Départ à {hhmm(dep)}{s.sigs[dr.id + date] ? ' · signé ✓' : ''}</div>}
+              {dep && <div className="meta">Départ à {hhmm(dep)}{s.sigs[dr.id + date] ? ' · signé' : ''}</div>}
               <div className="btns">
-                {loaded.length > 0 && <button className="btn ghost" onClick={() => setSigFor(dr)}>{s.sigs[dr.id + date] ? 'Signature ✓' : 'Signature'}</button>}
+                {loaded.length > 0 && <button className="btn ghost" onClick={() => setSigFor(dr)}>{s.sigs[dr.id + date] ? 'Signature faite' : 'Signature'}</button>}
                 {loaded.length > 0 && <button className="btn" data-depart onClick={() => go(dr)}>Départ</button>}
                 {gone.length > 0 && <button className="btn" data-retour onClick={() => setBack(dr)}>Retour</button>}
                 <button className="btn ghost" data-pdf onClick={() => pdf(dr)}>Bon PDF</button>
@@ -62,15 +69,16 @@ export function Trucks({ s, date }) {
         })}
       </div>
       <Sheet open={!!pickFor} onClose={() => setPickFor(null)}>
-        <h2>Charger dans…</h2>
+        <div className="row"><h2>Charger dans…</h2><button className="xbtn" aria-label="Fermer" onClick={() => setPickFor(null)}>×</button></div>
         <div className="lbl">Quai</div>
         <select value={dock} onChange={(e) => setDock(e.target.value)} aria-label="Quai"><option value="">Quai (optionnel)</option>{docks.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select>
         <div className="lbl">Commandes prêtes</div>
         {ready.map((o) => <button key={o.id} className="opt" onClick={() => setSel(sel.includes(o.id) ? sel.filter((x) => x !== o.id) : [...sel, o.id])}>
-          <span><b className="num">{o.num}</b> {o.client}</span><span>{sel.includes(o.id) ? '✓' : '○'}</span></button>)}
+          <span><b className="num">{o.num}</b> {o.client}</span><span>{sel.includes(o.id) ? 'Choisie' : 'Choisir'}</span></button>)}
         <div className="lbl">Livreur</div>
-        {drivers.map((d) => <button key={d.id} className="opt" data-driver={d.name} onClick={() => { if (!sel.length) return; loadTo(sel, d.id, dock || null); toast((sel.length > 1 ? sel.length + ' commandes chargées' : 'Commande chargée') + ' · ' + d.name); setPickFor(null) }}>
+        {drivers.map((d) => <button key={d.id} className="opt" data-driver={d.name} onClick={() => { if (!sel.length) return; withUndo((sel.length > 1 ? sel.length + ' commandes chargées' : 'Commande chargée') + ' · ' + d.name, () => loadTo(sel, d.id, dock || null)); setPickFor(null) }}>
           <b>{d.name}</b><span className="meta">{day.filter((o) => o.driver === d.id).length} cmd</span></button>)}
+        <button className="btn ghost" data-cancel onClick={() => setPickFor(null)}>Annuler</button>
       </Sheet>
       <Sheet open={!!sigFor} onClose={() => setSigFor(null)}>
         <h2>Signature · {sigFor?.name}</h2>
@@ -81,10 +89,10 @@ export function Trucks({ s, date }) {
         {back && s.orders.filter((o) => o.driver === back.id && o.date === date && o.status === 'go').map((o) => (
           <div key={o.id} className="card"><b><span className="num">{o.num}</span> {o.client}</b>
             <div className="btns">
-              <button className="btn" data-close="done" onClick={() => setStatus(o.id, 'done')}>Livrée</button>
-              <button className="btn bad" onClick={() => setStatus(o.id, 'fail')}>Non livrée</button>
-              <button className="btn ghost" onClick={() => postpone(o.id, addDays(date, 1))}>Reportée +1j</button>
-              <button className="btn ghost" onClick={() => setStatus(o.id, 'cancel')}>Annulée</button></div></div>))}
+              <button className="btn" data-close="done" onClick={() => withUndo('Livrée · ' + o.num, () => setStatus(o.id, 'done'))}>Livrée</button>
+              <button className="btn bad" onClick={() => withUndo('Non livrée · ' + o.num, () => setStatus(o.id, 'fail'))}>Non livrée</button>
+              <button className="btn ghost" onClick={() => withUndo('Reportée · ' + o.num, () => postpone(o.id, addDays(date, 1)))}>Reportée +1j</button>
+              <button className="btn ghost" onClick={() => withUndo('Annulée · ' + o.num, () => setStatus(o.id, 'cancel'))}>Annulée</button></div></div>))}
         <button className="btn ghost" onClick={() => setBack(null)}>Fermer</button>
       </Sheet>
     </div>

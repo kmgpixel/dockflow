@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Sheet, compress, toast } from './ui'
-import { STATUS, addOrder, addProblem, upd, setStatus, postpone, nameOf, hhmm, addDays, today, getState } from './store'
+import { duplicateOrder, STATUS, addOrder, addProblem, upd, setStatus, postpone, nameOf, hhmm, addDays, today, getState } from './store'
 import { orderPdf, deliver } from './pdf'
 
 const act = (st) => st.preps.filter((p) => p.on)
@@ -35,9 +35,9 @@ export function ProblemSheet({ o, onClose }) {
       <div className="lbl">Produit manquant</div>
       <div className="btns"><input style={{ flex: 3 }} placeholder="Produit" value={prod} onChange={(e) => setProd(e.target.value)} aria-label="Produit" />
         <input style={{ flex: 1, minWidth: 70 }} type="number" inputMode="numeric" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Quantité" /></div>
-      <button className={'btn ' + (err ? 'bad' : 'ghost')} onClick={() => setErr(!err)}>{err ? '✓ ' : ''}Erreur de préparation</button>
+      <button className={'btn ' + (err ? 'bad' : 'ghost')} onClick={() => setErr(!err)}>{err ? 'Coché · ' : ''}Erreur de préparation</button>
       {err && <textarea placeholder="Note" value={note} onChange={(e) => setNote(e.target.value)} />}
-      <label className="btn ghost" style={{ display: 'grid', placeItems: 'center' }}>📷 Ajouter une photo ({ph.length})
+      <label className="btn ghost" style={{ display: 'grid', placeItems: 'center' }}>Ajouter une photo ({ph.length})
         <input type="file" accept="image/*" capture="environment" hidden data-photo
           onChange={async (e) => { const f = e.target.files[0]; if (f) setPh([...ph, await compress(f)]) }} /></label>
       <button className="btn acc" disabled={!can} style={{ opacity: can ? 1 : 0.4 }} onClick={() => {
@@ -54,10 +54,11 @@ export function MenuSheet({ o, onClose, team, onPostpone }) {
     <Sheet open={!!o} onClose={close}>
       <h2>{o?.num}</h2>
       {!pick ? (<>
-        <button className="opt" onClick={() => { setStatus(o.id, 'wait'); close() }}>⏳ Attente accord client</button>
-        <button className="opt" onClick={() => { onPostpone(o); close() }}>📅 Reporter…</button>
-        <button className="opt" onClick={() => setPick(true)}>👤 Changer de préparateur</button>
-        <button className="opt" style={{ color: 'var(--bad)' }} onClick={() => { setStatus(o.id, 'cancel'); close() }}>✕ Annuler la commande</button>
+        <button className="opt" onClick={() => { setStatus(o.id, 'wait'); close() }}>Attente accord client</button>
+        <button className="opt" onClick={() => { onPostpone(o); close() }}>Reporter…</button>
+        <button className="opt" data-dup onClick={() => { const n = duplicateOrder(o); toast('Complément créé : ' + n + ' (demain)'); close() }}>Dupliquer (complément)</button>
+        <button className="opt" onClick={() => setPick(true)}>Changer de préparateur</button>
+        <button className="opt" style={{ color: 'var(--bad)' }} onClick={() => { setStatus(o.id, 'cancel'); close() }}>Annuler la commande</button>
       </>) : act(team).map((p) => <button key={p.id} className="opt" onClick={() => { upd(o.id, (x) => ({ ...x, prep: p.id }), 'Préparateur → ' + p.name); close() }}>{p.name}</button>)}
     </Sheet>
   )
@@ -88,6 +89,7 @@ export function DetailSheet({ o, onClose, team }) {
       <span className="flab" style={{ marginBottom: -8 }}>Préparateur</span><select value={e.prep || ''} onChange={set('prep')} aria-label="Préparateur"><option value="">Sans préparateur</option>{act(team).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
       <textarea placeholder="Commentaire" value={e.comment} onChange={set('comment')} />
       {edit && <button className="btn acc" onClick={save}>Enregistrer</button>}
+      {o.from && <div className="meta">Complément de {o.from}</div>}
       {o.photos.length > 0 && <div className="photos">{o.photos.map((p, i) => <img key={i} src={p} alt="" />)}</div>}
       <div className="lbl">Chronologie</div>
       <div className="tl">{[...o.history].reverse().map((h, i) => <div key={i}><b>{hhmm(h.ts)}</b> {h.action} <span className="meta">· {h.by}</span></div>)}</div>
