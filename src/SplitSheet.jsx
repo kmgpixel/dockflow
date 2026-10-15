@@ -45,14 +45,14 @@ export function SplitSheet({ o, onClose, team }) {
           {(o.parcels || 0) > 0 && (<><span className="flab">Colis</span><Stepper v={p.parcels} set={(v) => up(i, { parcels: v })} label={'colis ' + (i + 1)} /></>)}
         </div>))}
       {parts.length < 3 && <button className="btn ghost" data-add-truck onClick={() => setParts([...parts, blank()])}>+ Ajouter un 3e camion</button>}
-      {ducts.length > 0 && <div className="lbl">Gaines (jamais coupées) : dans quel camion ?</div>}
+      {ducts.length > 0 && <div className="lbl">Gaines (jamais coupées) : dans quel camion ?</div>}
       {ducts.map((g, k) => (
         <div key={k} className="opt" style={{ flexWrap: 'wrap', gap: 6 }} data-duct-line={k}><span className="num">{ductLine(g)}</span>
-          <span className="btns">{parts.map((_, i) => (
-            <button key={i} type="button" className={'big' + (ductOwner[k] === i ? ' on' : '')} style={{ minWidth: 52, minHeight: 44 }}
+          <span className="btns split-c">{parts.map((_, i) => (
+            <button key={i} type="button" className={'big' + (ductOwner[k] === i ? ' on' : '')} 
               onClick={() => setDuctOwner(ductOwner.map((x, j) => (j === k ? i : x)))}>C{i + 1}</button>))}</span></div>))}
       {o.bulk && (<>
-        <div className="lbl">Vrac : dans quel camion ?</div>
+        <div className="lbl">Vrac : dans quel camion ?</div>
         <div className="btns">{parts.map((_, i) => <button key={i} type="button" className={'big' + (bulkOwner === i ? ' on' : '')} onClick={() => setBulkOwner(i)}>Camion {i + 1}</button>)}</div></>)}
       {err.length > 0 && <div className="meta" data-split-err style={{ color: 'var(--bad)', fontWeight: 600 }}>{err.join(' · ')}</div>}
       <button className="btn acc" data-split-ok disabled={err.length > 0} onClick={go}>Charger dans {parts.length} camions</button>
