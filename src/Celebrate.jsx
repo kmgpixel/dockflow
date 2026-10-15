@@ -18,7 +18,6 @@ export function CardFlash() {
   return (
     <motion.div className="flash" data-flash initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 1, 0] }} transition={{ duration: rm ? 0.4 : 1.1, times: [0, 0.12, 0.7, 1] }}>
       <motion.i initial={{ opacity: 0 }} animate={{ opacity: [0, 0.22, 0] }} transition={{ duration: 0.7 }} />
-      <motion.span initial={{ scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 600, damping: 26 }}><Tick size={34} /></motion.span>
     </motion.div>
   )
 }

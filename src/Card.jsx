@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useMotionValue, useTransform, animate } from 'motion/react'
 import { STATUS, NEXT, hasIssue, resolve } from './store'
-import { where } from './pack'
+import { where, formatPack } from './pack'
 import { fmtDM } from './dates'
 import { StatusIconMorph } from './StatusIcon'
 import { CardFlash, buzz } from './Celebrate'
@@ -38,7 +38,7 @@ function CardBase({ o, team, open, hint, onToggle, onOpen, onProblem, onMenu, on
   return (
     <motion.div layout={dragging.current ? false : 'position'} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.12 } }} transition={{ duration: 0.14 }}
-      className={'swipe' + (o.status === 'cancel' ? ' cancel' : '') + (open ? ' open' : '')} style={{ background: 'var(--card)' }} data-card={o.num}>
+      className={'swipe' + (o.status === 'cancel' ? ' cancel' : '') + (open ? ' open' : '')} style={{ background: "var(--card)" }} data-card={o.num} data-pack={formatPack(o)} title={o.num}>
       <div className="under">
         <motion.span style={{ opacity: bgR, background: nxt ? STATUS[nxt].c : 'transparent', position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', paddingLeft: 20 }}>
           {nxt ? '→ ' + (nxt === 'ready' ? 'Fin de préparation' : STATUS[nxt].l) : ''}

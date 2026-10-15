@@ -16,8 +16,8 @@ export function dashStats(os) {
   const next = all.filter((o) => o.time && !['done', 'fail', 'moved'].includes(o.status)).sort((a, b) => a.time.localeCompare(b.time))[0]
   return {
     total: all.length, started, main: started ? nDone : nReady, label: started ? 'livrée' : 'prête', next,
-    chips: [['À préparer', n((o) => ['todo', 'prep', 'wait'].includes(o.status)), 'todo'], ['Prêtes', n((o) => ['ready', 'loaded'].includes(o.status)), 'ready'],
-      ['Parties', n((o) => ['go', 'done'].includes(o.status)), 'go'], ['Problèmes', n(hasIssue), 'issue']],
+    chips: [['À préparer', n((o) => ['todo', 'prep', 'wait'].includes(o.status)), 'todo'], ['Prête', n((o) => ['ready', 'loaded'].includes(o.status)), 'ready'],
+      ['Partie', n((o) => ['go', 'done'].includes(o.status)), 'go'], ['Problème', n(hasIssue), 'issue']].map(([l, v, k]) => [k === 'todo' || v < 2 ? l : l + 's', v, k]),
     seg: [['#9a9ea6', n((o) => o.status === 'todo')], ['#2f6fdb', n((o) => ['prep', 'wait'].includes(o.status))], ['#1f9d6b', n((o) => o.status === 'ready')],
       ['#0e8f9a', n((o) => o.status === 'loaded')], ['#16181b', n((o) => o.status === 'go')], ['#117a52', n((o) => o.status === 'done')]],
   }
