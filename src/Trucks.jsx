@@ -7,6 +7,8 @@ import { formatPack, fmtH, formatPackUI } from './pack'
 import { dockName } from './people'
 import { loadPdf, deliver } from './pdf'
 import { withUndo } from './undo'
+import { StatusIcon } from './StatusIcon'
+import { Tick, buzz } from './Celebrate'
 import { SplitSheet } from './SplitSheet'
 import { partLabel } from './split'
 
@@ -37,7 +39,7 @@ export function Trucks({ s }) {
   const drivers = s.team.drivers.filter((d) => d.on)
   const docks = s.team.docks.filter((d) => d.on)
   const go = (dr) => {
-    setLeaving(dr.id); setTimeout(() => setLeaving(null), 260)
+    setLeaving(dr.id); buzz([30]); setTimeout(() => setLeaving(null), 380)
     depart(dr.id, date); toast('Départ enregistré · ' + hhmm(Date.now()))
   }
   const pdf = async (dr) => deliver(loadPdf(getState(), dr.id), 'bon-chargement-' + dr.name.replace(/\W+/g, '') + '.pdf')
@@ -67,12 +69,14 @@ export function Trucks({ s }) {
           const dep = Math.max(0, ...os.map((o) => o.departAt || 0)) || null
           return (
             <motion.div key={dr.id} layout className="card" data-truck={dr.name}
-              animate={leaving === dr.id ? { x: 40, opacity: 0.4 } : { x: 0, opacity: 1 }} transition={{ duration: 0.2 }}>
+              animate={leaving === dr.id ? { x: 56, opacity: 0.5 } : { x: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 600, damping: 35 }} style={{ position: 'relative' }}>
+              <AnimatePresence>{leaving === dr.id && <motion.span className="truck-go" initial={{ x: -10, opacity: 0 }} animate={{ x: 90, opacity: 1 }} exit={{ x: 180, opacity: 0 }} transition={{ duration: 0.3 }}><StatusIcon k="go" size={26} /></motion.span>}</AnimatePresence>
               <div className="row"><b style={{ fontSize: 18 }}>{dr.name}</b><span className="num">{dockName(s.team, os.find((o) => o.dock)?.dock)}</span></div>
               <div className="meta">{ld ? 'Chargé le ' + fmtDM(new Date(ld).toISOString().slice(0, 10)) + ' à ' + hhmm(ld) + ' · ' : ''}Livraisons du {dates.map(fmtDM).join(', ')}</div>
               <AnimatePresence>{os.map((o) => (
                 <motion.div key={o.id} layout className="meta" animate={leaving === dr.id ? { y: -6 } : { y: 0 }} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span><b>{o.client}</b> · {o.city} {fmtH(o.time)} <span className="num">{o.num}{o.part ? ' · ' + partLabel(o) : ''}</span></span><span style={{ color: STATUS[o.status].c, fontWeight: 700 }}>{STATUS[o.status].l}</span></motion.div>))}</AnimatePresence>
+                  <span><b>{o.client}</b> · {o.city} {fmtH(o.time)} <span className="num">{o.num}{o.part ? ' · ' + partLabel(o) : ''}</span></span><span className="tst" style={{ color: STATUS[o.status].c }}><StatusIcon k={o.status} size={15} />{STATUS[o.status].l}</span></motion.div>))}</AnimatePresence>
+              {os.length > 0 && os.every((o) => o.status === 'done') && <motion.div className="fin" data-fin initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 600, damping: 35 }}><Tick size={22} />Tournée terminée</motion.div>}
               {dep && <div className="meta">Départ à {hhmm(dep)}{s.sigs[dr.id + date] ? ' · signé' : ''}</div>}
               <div className="btns">
                 {loaded.length > 0 && <button className="btn ghost" onClick={() => setSigFor(dr)}>{s.sigs[dr.id + date] ? 'Signature faite' : 'Signature'}</button>}
