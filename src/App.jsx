@@ -1,25 +1,29 @@
 import { useEffect, useState } from 'react'
-import { useStore, today } from './store'
+import { useStore, today, firstRun, hasRealData } from './store'
 import { Day } from './Day'
 import { Trucks } from './Trucks'
 import { Team, Settings } from './Team'
 import { AddSheet } from './AddSheet'
 import { PrepSheet } from './PrepSheet'
 import { ProblemSheet, MenuSheet, PostponeSheet, DetailSheet } from './Sheets'
+import { AnimatePresence } from 'motion/react'
 import { Icon, Toaster } from './ui'
 import { Stats } from './Stats'
 import { LoadOne } from './LoadOne'
+import { Onboarding } from './Onboarding'
 import { SummarySheet } from './Summary'
 
 export default function App() {
   const s = useStore()
   const [tab, setTab] = useState('day'), [date, setDate] = useState(today())
+  const [onb, setOnb] = useState(() => { try { return /[?&]onboarding/.test(location.search) || (firstRun && !navigator.webdriver && !hasRealData(s)) } catch { return false } })
   const [sum, setSum] = useState(false), [add, setAdd] = useState(false), [detail, setDetail] = useState(null), [prob, setProb] = useState(null), [menu, setMenu] = useState(null), [post, setPost] = useState(null), [fin, setFin] = useState(null), [pk, setPk] = useState(null), [ld, setLd] = useState(null)
   useEffect(() => {
     const r = document.documentElement
     r.classList.toggle('dark', s.theme === 'dark'); r.classList.toggle('light', s.theme === 'light')
     document.querySelector('meta[name=theme-color]')?.setAttribute('content', s.theme === 'dark' ? '#0f1012' : '#f3f1ec')
   }, [s.theme])
+  useEffect(() => { document.documentElement.classList.toggle('dock-mode', !!s.settings?.dockMode) }, [s.settings?.dockMode])
   const fresh = (o) => o && s.orders.find((x) => x.id === o.id)
   const tabs = [['day', 'Jour'], ['truck', 'Camions'], ['plus'], ['team', 'Équipe'], ['set', 'Réglages']]
   return (
@@ -29,7 +33,7 @@ export default function App() {
         {tab === 'truck' && <Trucks s={s} />}
         {tab === 'team' && <Team s={s} date={date} onStats={() => setTab('stats')} />}
         {tab === 'stats' && <Stats s={s} onBack={() => setTab('team')} />}
-        {tab === 'set' && <Settings s={s} date={date} onStats={() => setTab('stats')} onSummary={() => setSum(true)} />}
+        {tab === 'set' && <Settings s={s} date={date} onStats={() => setTab('stats')} onSummary={() => setSum(true)} onOnboard={() => setOnb(true)} />}
       </div>
       <nav className="tabbar">
         {tabs.map(([k, l]) => k === 'plus'
@@ -45,6 +49,7 @@ export default function App() {
       <MenuSheet o={fresh(menu)} onClose={() => setMenu(null)} team={s.team} onPostpone={setPost} />
       <PostponeSheet o={fresh(post)} onClose={() => setPost(null)} />
       <SummarySheet open={sum} onClose={() => setSum(false)} s={s} date={date} />
+      <AnimatePresence>{onb && <Onboarding s={s} onDone={() => setOnb(false)} key="onb" />}</AnimatePresence>
       <Toaster />
     </div>
   )

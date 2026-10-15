@@ -22,13 +22,14 @@ import { migrate } from './migrate'
 import { seed } from './seed'
 
 let state = null
+export let firstRun = false
 const subs = new Set()
 const emit = () => { subs.forEach((f) => f()); set('dockflow', state).catch(() => {}) }
 export const getState = () => state
 export function useStore() { return useSyncExternalStore((f) => (subs.add(f), () => subs.delete(f)), () => state) }
 export async function init() {
   try { state = (await get('dockflow')) || null } catch { state = null }
-  const had = state; state = state ? migrate(state) : seed()
+  const had = state; firstRun = !had; state = state ? migrate(state) : seed()
   if (had && had.v !== state.v) set('dockflow', state).catch(() => {})
   try { navigator.storage?.persist?.() } catch {}
 }
@@ -90,3 +91,5 @@ export function duplicateOrder(o) {
     comment: note, from: o.num, history: [{ ts: Date.now(), action: 'Complément de ' + o.num, by: 'Moi' }] }] }))
   return num
 }
+export const setSettings = (patch) => setState((s) => ({ ...s, settings: { ...(s.settings || {}), ...patch } }))
+export const hasRealData = (s) => s.orders.some((o) => o.history.some((h) => h.by !== 'Démo'))

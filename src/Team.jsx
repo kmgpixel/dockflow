@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { editTeam, setTheme, replaceAll, resetDemo, loadDemo, getState, uid } from './store'
+import { setSettings, editTeam, setTheme, replaceAll, resetDemo, loadDemo, getState, uid } from './store'
 import { reportPdf, deliver } from './pdf'
 import { toast } from './ui'
 
@@ -37,7 +37,7 @@ export function Team({ s, date, onStats }) {
   )
 }
 
-export function Settings({ s, date, onStats, onSummary }) {
+export function Settings({ s, date, onStats, onSummary, onOnboard }) {
   const backup = async () => {
     const blob = new Blob([JSON.stringify(getState())], { type: 'application/json' })
     const file = new File([blob], 'dockflow-sauvegarde.json', { type: 'application/json' })
@@ -53,6 +53,11 @@ export function Settings({ s, date, onStats, onSummary }) {
       <div className="sec"><span>Thème</span></div>
       <div className="list"><div className="btns">{[['auto', 'Auto'], ['light', 'Clair'], ['dark', 'Sombre']].map(([k, l]) =>
         <button key={k} className={'chip' + (s.theme === k ? ' on' : '')} style={{ flex: 1 }} onClick={() => setTheme(k)}>{l}</button>)}</div></div>
+      <div className="sec"><span>Affichage</span></div>
+      <div className="list"><button className={'btn ' + (s.settings?.dockMode ? 'acc' : 'ghost')} data-dockmode aria-pressed={!!s.settings?.dockMode} onClick={() => setSettings({ dockMode: !s.settings?.dockMode })}>Mode au quai : {s.settings?.dockMode ? 'activé' : 'désactivé'}</button>
+        <div className="meta">Textes plus grands, boutons larges, contraste renforcé.</div></div>
+      <div className="sec"><span>Équipe</span></div>
+      <div className="list"><button className="btn ghost" data-onboard onClick={onOnboard}>Configurer mon équipe</button></div>
       <div className="sec"><span>Données</span></div>
       <div className="list">
         <button className="btn" data-backup onClick={backup}>Sauvegarder (.json)</button>

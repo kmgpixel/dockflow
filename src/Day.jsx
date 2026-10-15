@@ -6,6 +6,8 @@ import { Dash } from './Dash'
 import { StatusIcon } from './StatusIcon'
 import { Alerts } from './Alerts'
 import { GlobalSearch } from './GlobalSearch'
+import { VoiceSearch } from './VoiceSearch'
+import { setSettings } from './store'
 import { withUndo } from './undo'
 import { STATUS, NEXT, today, addDays, hasIssue, advance } from './store'
 
@@ -30,7 +32,7 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary, on
     <div onTouchStart={(e) => setX0(e.target.closest('[data-card],.filters') ? null : [e.touches[0].clientX, e.touches[0].clientY])}
       onTouchEnd={(e) => { if (x0 && Math.abs(e.changedTouches[0].clientY - x0[1]) < 40) sw(e.changedTouches[0].clientX - x0[0]) }}>
       <div className="top">
-        <div className="row"><span className="brand"><i />DOCKFLOW</span><button className="lnk" data-summary onClick={onSummary}>Résumé du soir</button></div>
+        <div className="row"><span className="brand"><i />DOCKFLOW</span><span><button className="lnk" data-dockshort onClick={() => setSettings({ dockMode: !s.settings?.dockMode })}>{s.settings?.dockMode ? 'Mode quai : oui' : 'Au quai'}</button> <button className="lnk" data-summary onClick={onSummary}>Résumé du soir</button></span></div>
         <h1>{date === t ? "Aujourd'hui" : date === addDays(t, 1) ? 'Demain' : 'Livraisons'}</h1>
         <div className="sub" style={{ textTransform: 'capitalize' }}>{fmt(date)} · {all.length} commande{all.length > 1 ? 's' : ''}</div>
         <div className="days">
@@ -42,7 +44,7 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary, on
         </div>
       </div>
       <Dash os={all} fs={fs} setFs={setFs} />
-      <div className="search"><input placeholder="Rechercher n°, client ou ville" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+      <div className="search"><VoiceSearch q={q} setQ={setQ} /></div>
       <div className="filters">
         {Object.entries(STATUS).slice(0, 5).map(([k2, v]) => <button key={k2} className={'chip' + (fs === k2 ? ' on' : '')} onClick={() => setFs(fs === k2 ? null : k2)}><StatusIcon k={k2} size={15} />{v.l}</button>)}
         {s.team.preps.filter((p) => p.on).map((p) => <button key={p.id} className={'chip' + (fp === p.id ? ' on' : '')} onClick={() => setFp(fp === p.id ? null : p.id)}>{p.name.split(' ')[0]}</button>)}

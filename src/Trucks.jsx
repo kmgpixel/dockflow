@@ -10,6 +10,7 @@ import { withUndo } from './undo'
 import { StatusIcon } from './StatusIcon'
 import { Tick, buzz } from './Celebrate'
 import { SplitSheet } from './SplitSheet'
+import { DayLog } from './DayLog'
 import { partLabel } from './split'
 
 function SigPad({ onSave }) {
@@ -87,6 +88,7 @@ export function Trucks({ s }) {
             </motion.div>)
         })}
       </div>
+      <DayLog s={s} />
       <Sheet open={!!pickFor} onClose={() => setPickFor(null)}>
         <div className="row"><h2>Charger dans…</h2><button className="xbtn" aria-label="Fermer" onClick={() => setPickFor(null)}>×</button></div>
         <div className="lbl">Commandes prêtes (aujourd'hui et demain)</div>
