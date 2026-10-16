@@ -35,7 +35,7 @@ const ver=await p.evaluate(()=>new Promise(res=>{const r=indexedDB.open('keyval-
 ok('version de schéma',ver>=3,'v'+ver)
 // ---- démo + équipe renommée
 await tab('Réglages'); p.once('dialog',d=>d.accept()); await clickT('Recharger les données de démo'); await sl(500)
-await tab('Équipe')
+await tab('Équipe'); await p.click('[data-edit-team]'); await sl(300)
 await rename('Mathieu (resp.)','TestResp (resp.)'); await rename('Karim','HICHEM'); await sl(400)
 await tab('Jour'); await day(1); await sl(300)
 // ---- création
