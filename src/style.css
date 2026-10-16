@@ -246,10 +246,27 @@ select{appearance:none;-webkit-appearance:none;padding-right:40px;background-ima
 .ob-dots i{height:10px}
 .ob-step .meta{font-size:15px;color:var(--mut)}
 [data-ob-mode].on{background:var(--ink)!important;border-color:var(--ink)!important;color:var(--bg)!important}
-[data-dockmode]{display:flex;justify-content:space-between;align-items:center}
-[data-dockmode]::after{content:"";width:46px;height:28px;border-radius:99px;background:var(--line);box-shadow:inset 0 0 0 2px var(--line);transition:background .18s}
-[data-dockmode][aria-pressed="true"]::after{background:#fff;box-shadow:inset 22px 0 0 2px var(--acc)}
+[data-dockmode],[data-swipeopt]{display:flex;justify-content:space-between;align-items:center}
+[data-dockmode]::after,[data-swipeopt]::after{content:"";width:46px;height:28px;border-radius:99px;background:var(--line);box-shadow:inset 0 0 0 2px var(--line);transition:background .18s}
+[data-dockmode][aria-pressed="true"]::after,[data-swipeopt][aria-pressed="true"]::after{background:#fff;box-shadow:inset 22px 0 0 2px var(--acc)}
 .btn.bad{margin-top:14px}
 [data-dockmode][aria-pressed="true"]{background:var(--card)!important;color:var(--ink)!important;border:1px solid var(--line)}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent)}
 .ob-step .btn.acc[aria-label="Ajouter"]{background:color-mix(in srgb,var(--acc) 12%,var(--card));color:var(--acc)}
+
+/* --- V1.3.1 : dimensions iPhone 17 Pro (402 pt) et glissement --- */
+.swipe .c{touch-action:pan-y}
+html{-webkit-text-size-adjust:100%}
+.app,.scroll,.list,.top,.c,.card,.sheet .sb{min-width:0;max-width:100%}
+.c>*,.card>*,.row>*{min-width:0}
+.cli,.where,.meta,.num,.sub{overflow-wrap:anywhere}
+.row{gap:8px}
+.st{white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+.btns .btn{min-width:min(130px,100%)}
+.q2 .btn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.days button{min-width:0;padding:0 4px}
+.kpi,.dash{min-width:0}
+.sheet{max-height:calc(100dvh - env(safe-area-inset-top) - 24px)}
+.sheet .sb{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+.tabbar{left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right))}
+img{max-width:100%}

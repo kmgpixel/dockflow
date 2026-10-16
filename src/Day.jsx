@@ -53,7 +53,7 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary, on
       <div className="sec"><span>Commandes</span><span style={{ fontFamily: 'var(--mono)' }}>{list.length}</span></div>
       <div className="list">
         <AnimatePresence initial={false} mode="popLayout">
-          {list.map((o, i) => <Card key={o.id} o={o} team={s.team} open={openId === o.id} hint={hint && i === 0} onToggle={toggle} qa={qa} onOpen={onOpen} onProblem={onProblem} onMenu={onMenu} onAdvance={advanceCard} />)}
+          {list.map((o, i) => <Card key={o.id} o={o} team={s.team} open={openId === o.id} hint={hint && i === 0 && !s.settings?.noSwipe} noSwipe={!!s.settings?.noSwipe} onToggle={toggle} qa={qa} onOpen={onOpen} onProblem={onProblem} onMenu={onMenu} onAdvance={advanceCard} />)}
         </AnimatePresence>
         {!list.length && <div className="meta" style={{ textAlign: 'center', padding: 30 }}>Aucune commande. Touchez + pour en ajouter.</div>}
       </div>
