@@ -27,6 +27,7 @@ export function Dash({ os, fs, setFs }) {
   const d = dashStats(os)
   const complete = d.total > 0 && os.filter((o) => o.status !== 'cancel').every((o) => ['ready', 'loaded', ...OUT].includes(o.status))
   const lab = d.label + (d.main > 1 ? 's' : '')
+  if (!d.total) return null
   return (
     <section className="dash" data-dash data-complete={complete ? '' : undefined}>
       <div className="gauge"><strong><Count value={d.main} /></strong><span className="of">sur</span><strong className="tot"><Count value={d.total} /></strong><span className="lab">{lab}</span>{complete && <motion.span className="dash-ok" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }}><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>Journée complète</motion.span>}</div>
