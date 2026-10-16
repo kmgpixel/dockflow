@@ -40,7 +40,7 @@ export function MenuSheet({ o, onClose, team, onPostpone }) {
         <button className="opt" onClick={() => { onPostpone(o); close() }}>Reporter…</button>
         <button className="opt" data-dup onClick={() => { const n = duplicateOrder(o); toast('Complément créé : ' + n + ' (demain)'); close() }}>Dupliquer (complément)</button>
         <button className="opt" onClick={() => setPick(true)}>Changer de préparateur</button>
-        <button className="opt" style={{ color: 'var(--bad)' }} onClick={() => { setStatus(o.id, 'cancel'); close() }}>Annuler la commande</button>
+        <button className="opt danger" onClick={() => { setStatus(o.id, 'cancel'); close() }}>Annuler la commande</button>
       </>) : act(team).map((p) => <button key={p.id} className="opt" onClick={() => { upd(o.id, (x) => ({ ...x, prep: p.id }), 'Préparateur → ' + p.name); close() }}>{p.name}</button>)}
     </Sheet>
   )
@@ -65,7 +65,7 @@ export function DetailSheet({ o, onClose, team, onPack, onFinish }) {
   const set = (k) => (ev) => setEdit({ ...e, [k]: ev.target.value })
   return (
     <Sheet open onClose={() => { setEdit(null); onClose() }}>
-      <div className="row"><span className="num">{o.num}</span><span className="st" style={{ '--s': STATUS[o.status].c, padding: '6px 10px', borderRadius: 99, color: '#fff', background: STATUS[o.status].c, fontSize: 12, fontWeight: 700 }}>{STATUS[o.status].l}</span></div>
+      <div className="row"><span className="num">{o.num}</span><span className="st" style={{ '--s': STATUS[o.status].c }}>{STATUS[o.status].l}</span></div>
       <label><span className="flab">Client</span><input value={e.client} onChange={set('client')} aria-label="Client" /></label>
       <div className="btns" style={{ flexWrap: 'nowrap' }}><label style={{ flex: 2 }}><span className="flab">Ville</span><input value={e.city || ''} onChange={set('city')} aria-label="Ville" /></label><label style={{ flex: 1 }}><span className="flab">Heure</span><input type="time" value={e.time || ''} onChange={set('time')} aria-label="Heure" /></label></div>
       <div className="card" data-pack><span className="flab">Conditionnement</span><b>{formatPackUI(o) || 'Pas encore saisi'}</b>

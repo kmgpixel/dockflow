@@ -2,16 +2,16 @@ import { useSyncExternalStore } from 'react'
 import { get, set } from 'idb-keyval'
 
 export const STATUS = {
-  todo: { l: 'À préparer', c: '#9a9ea6', p: 0 },
-  prep: { l: 'En préparation', c: '#2f6fdb', p: 1 },
-  wait: { l: 'Attente client', c: '#b26be0', p: 1 },
-  ready: { l: 'Prête', c: '#1f9d6b', p: 3 },
-  loaded: { l: 'Chargée', c: '#0e8f9a', p: 4 },
+  todo: { l: 'À préparer', c: 'var(--todo)', p: 0 },
+  prep: { l: 'En préparation', c: 'var(--prep)', p: 1 },
+  wait: { l: 'Attente client', c: 'var(--wait)', p: 1 },
+  ready: { l: 'Prête', c: 'var(--ready)', p: 3 },
+  loaded: { l: 'Chargée', c: 'var(--load)', p: 4 },
   go: { l: 'En livraison', c: 'var(--go)', p: 5 },
-  done: { l: 'Livrée', c: '#117a52', p: 5 },
-  fail: { l: 'Non livrée', c: '#e0392b', p: 5 },
-  moved: { l: 'Reportée', c: '#b26be0', p: 5 },
-  cancel: { l: 'Annulée', c: '#9a9ea6', p: 0 },
+  done: { l: 'Livrée', c: 'var(--done)', p: 5 },
+  fail: { l: 'Non livrée', c: 'var(--fail)', p: 5 },
+  moved: { l: 'Reportée', c: 'var(--moved)', p: 5 },
+  cancel: { l: 'Annulée', c: 'var(--todo)', p: 0 },
 }
 export const NEXT = { todo: 'prep', prep: 'ready', wait: 'ready', ready: 'loaded' }
 

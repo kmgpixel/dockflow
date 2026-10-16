@@ -40,7 +40,8 @@ export function pill(d, x, y, label, color) {
   const w = d.getTextWidth(label) + 6
   d.setFillColor(...hex(color)); d.roundedRect(x, y - 3.6, w, 5.2, 2.6, 2.6, 'F'); d.setTextColor(255, 255, 255); d.text(label, x + 3, y)
 }
-export const stColor = (c) => (c.startsWith('var') ? '#16181b' : c)
+const PDFC = { todo: '#8a8f98', prep: '#2f6fdb', wait: '#b7791f', ready: '#1f9d6b', load: '#0e8f9a', go: '#16181b', done: '#117a52', fail: '#d4291b', moved: '#6b7a99' }
+export const stColor = (c) => { const m = /var\(--(\w+)\)/.exec(c); return m ? PDFC[m[1]] || '#16181b' : c }
 export function alerts(d, y, list) {
   list.forEach((o) => {
     if (y > 262) { d.addPage(); y = 20 }

@@ -10,7 +10,7 @@ import { Details } from './Details'
 const SNAP = { type: 'spring', stiffness: 900, damping: 50 }
 const GOOD = (prev, cur) => cur === 'done' || (cur === 'ready' && ['prep', 'wait'].includes(prev))
 
-function CardBase({ o, team, open, hint, noSwipe, onToggle, onOpen, onProblem, onMenu, onAdvance, qa }) {
+function CardBase({ sev, o, team, open, hint, noSwipe, onToggle, onOpen, onProblem, onMenu, onAdvance, qa }) {
   const st = STATUS[o.status]
   const x = useMotionValue(0)
   const lp = useRef(null), moved = useRef(false), start = useRef([0, 0]), dragging = useRef(false), prev = useRef(o.status)
@@ -80,7 +80,7 @@ function CardBase({ o, team, open, hint, noSwipe, onToggle, onOpen, onProblem, o
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
         onClick={() => { if (!moved.current) onToggle(o.id) }} onContextMenu={(e) => e.preventDefault()} aria-expanded={open}>
         <div className="cli">{o.client}</div>
-        <div className="st"><StatusIconMorph k={issue ? 'issue' : o.status} size={16} /><span>{issue ? 'Problème' : st.l}</span></div>
+        <div className="st"><StatusIconMorph k={issue ? 'issue' : o.status} size={16} /><span>{issue ? 'Problème' : st.l}</span>{sev && <i className={'sev' + (sev === 'red' ? ' red' : '')} data-sev={sev} />}</div>
         <div className="where">{where(o) || 'Ville non renseignée'}{o.status === 'moved' ? ' · → ' + fmtDM(o.date) : ''}</div>
         {issue ? (
           <div className="flag">

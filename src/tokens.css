@@ -1,0 +1,30 @@
+/* Tokens DockFlow V1.4 : couleurs par sens, échelle typographique, grille 4/8 */
+:root{
+  /* neutres chauds (clair) */
+  --bg:#f4f2ee;--card:#fff;--raised:#fff;--sheet:#fff;--ink:#1a1a1c;--mut:#5a5852;--line:#e3e0d8;--line-2:#cfcbc1;
+  --hair:rgba(26,26,28,.08);--on-ink:#f4f2ee;
+  /* orange : action principale et bouton + uniquement */
+  --acc:#ff5a1f;
+  /* statuts (sens) */
+  --todo:#8a8f98;--prep:#2f6fdb;--wait:#b7791f;--ready:#1f9d6b;--load:#0e8f9a;--go:#1a1a1c;--done:#117a52;--fail:#d4291b;--moved:#6b7a99;
+  --bad:#d4291b;--bad-t:#c0281a;--warn:#b7791f;
+  /* typographie : 6 tailles */
+  --fs-display:40px;--fs-title:32px;--fs-card:17px;--fs-body:15px;--fs-meta:13px;--fs-over:12px;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  /* grille 4/8 */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;
+  --m:16px;--r-card:16px;--r-ctl:12px;--r-pill:99px;
+  --shadow-nav:0 10px 30px rgba(0,0,0,.25);
+}
+@media(prefers-color-scheme:dark){:root:not(.light){
+  --bg:#0e0f11;--card:#17181b;--raised:#1f2125;--sheet:#282a2f;--ink:#e8eaed;--mut:#a8afba;--line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.16);
+  --hair:rgba(255,255,255,.08);--on-ink:#0e0f11;--acc:#e5531d;
+  --todo:#8b919b;--prep:#6ea0ff;--wait:#e0a33a;--ready:#3cc48e;--load:#3bbcc8;--go:#e8eaed;--done:#3fae83;--fail:#ff8a80;--moved:#8a98b8;
+  --bad:#e5483b;--bad-t:#ff8a80;--warn:#e0a33a;--shadow-nav:0 10px 30px rgba(0,0,0,.6);
+}}
+:root.dark{
+  --bg:#0e0f11;--card:#17181b;--raised:#1f2125;--sheet:#282a2f;--ink:#e8eaed;--mut:#a8afba;--line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.16);
+  --hair:rgba(255,255,255,.08);--on-ink:#0e0f11;--acc:#e5531d;
+  --todo:#8b919b;--prep:#6ea0ff;--wait:#e0a33a;--ready:#3cc48e;--load:#3bbcc8;--go:#e8eaed;--done:#3fae83;--fail:#ff8a80;--moved:#8a98b8;
+  --bad:#e5483b;--bad-t:#ff8a80;--warn:#e0a33a;--shadow-nav:0 10px 30px rgba(0,0,0,.6);
+}
