@@ -79,3 +79,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:0 0 0
 .cmp-w{position:sticky;top:0;height:0;z-index:16}
 .cmp{position:absolute;left:0;right:0;top:0;height:calc(44px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding-left:var(--m);padding-right:var(--m);font-size:var(--fs-card);font-weight:700;pointer-events:none}
 .cmp span:last-child{font-size:var(--fs-meta);font-weight:500;color:var(--mut)}
+
+/* --- V1.4 lot A : finitions --- */
+.list{padding-bottom:0!important}
+.scroll{padding-bottom:calc(150px + env(safe-area-inset-bottom))!important}
+.scroll>div>.list:last-child,.scroll>div>:last-child .list:last-child{padding-bottom:var(--sp-4)!important}
+.stick{box-shadow:0 1px 0 color-mix(in srgb,var(--line) calc(var(--p,0)*100%),transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);background:color-mix(in srgb,var(--bg) 88%,transparent)}
+.filters{margin-left:0;padding-left:var(--m)!important;scroll-padding-left:var(--m)}
+.app::after{height:calc(130px + env(safe-area-inset-bottom))}
+[data-dockmode]::after,[data-swipeopt]::after{box-shadow:inset 0 0 0 2px var(--mut),inset -18px 0 0 2px var(--mut)}
+[data-dockmode][aria-pressed="true"]::after,[data-swipeopt][aria-pressed="true"]::after{background:var(--ink);box-shadow:inset 18px 0 0 2px var(--ink),inset 0 0 0 9px var(--bg)}
+.dash .chips b,.dash .chips span{font-size:inherit}
+.btn.bad{color:var(--fail)!important;border-color:color-mix(in srgb,var(--fail) 60%,transparent)!important}
+.card .num,.card .time,.row .num{font-family:var(--mono)}

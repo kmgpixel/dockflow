@@ -66,7 +66,7 @@ await p.evaluate(()=>{window.__dl=null;const o=URL.createObjectURL.bind(URL);URL
 await p.click('[data-backup]'); await sl(600)
 const bk=await p.evaluate(async()=>window.__dl?await window.__dl.text():null); ok('sauvegarde JSON',!!bk&&JSON.parse(bk).orders.length>8)
 fs.writeFileSync('/tmp/bk.json',bk||'{}')
-p.on('dialog',d=>d.accept()); await p.click('[data-clear]'); await sl(600)
+p.on('dialog',d=>d.accept()); await p.evaluate(()=>document.querySelector('[data-clear]').scrollIntoView({block:'center'})); await sl(200); await p.click('[data-clear]'); await sl(600)
 await clickT('Jour','nav button'); await sl(500); ok('données vidées',!await p.evaluate(()=>!!document.querySelector('[data-card="SO-L9001"]')))
 await clickT('Réglages','nav button'); await sl(300)
 await (await p.$('[data-restore]')).uploadFile('/tmp/bk.json'); await sl(700)

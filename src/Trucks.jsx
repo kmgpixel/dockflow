@@ -54,7 +54,7 @@ export function Trucks({ s }) {
           <div key={d} data-ready-group={d}><div className="grp">{l} · {g.length}</div>
             {g.map((o) => <div key={o.id} className="card" style={{ marginTop: 8 }}><div className="row"><b>{o.client}</b><span className="num">{fmtH(o.time)}</span></div>
               <div className="meta">{o.city} · {o.num} · {formatPackUI(o)}</div>
-              <button className="linkbtn" data-split={o.num} onClick={() => setSplitFor(o)}>Répartir sur plusieurs camions →</button></div>)}</div>) : null })}
+              <button className="linkbtn" data-split={o.num} onClick={() => setSplitFor(o)}>Répartir sur plusieurs camions</button></div>)}</div>) : null })}
         {!day.some((o) => o.driver && ['loaded', 'go'].includes(o.status)) && (<>
           <div className="sec" style={{ padding: '14px 6px 0' }}><span>Aucun camion chargé · livreurs actifs</span></div>
           {drivers.map((dr) => { const last = lastDock(s, dr.id)

@@ -1,6 +1,6 @@
-:root{--bg:#f3f1ec;--card:#fff;--ink:#16181b;--mut:#5c6067;--line:#e4e1da;--acc:#ff5a1f;--prep:#2f6fdb;--wait:#b26be0;--ready:#1f9d6b;--load:#0e8f9a;--go:#16181b;--bad:#e0392b;--todo:#9a9ea6;--mono:ui-monospace,"SF Mono",Menlo,monospace}
-@media(prefers-color-scheme:dark){:root:not(.light){--bg:#0f1012;--card:#1a1c1f;--ink:#f2f1ee;--mut:#a3a7ae;--line:#2a2d31;--go:#f2f1ee}}
-:root.dark{--bg:#0f1012;--card:#1a1c1f;--ink:#f2f1ee;--mut:#a3a7ae;--line:#2a2d31;--go:#f2f1ee}
+:root{--mono:ui-monospace,"SF Mono",Menlo,monospace}
+/* couleurs sombres : voir tokens.css */
+
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 html,body,#root{height:100%}
 body{font:15px/1.35 -apple-system,"SF Pro Text",system-ui,sans-serif;background:var(--bg);color:var(--ink);overscroll-behavior:none}
