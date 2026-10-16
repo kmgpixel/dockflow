@@ -1,0 +1,19 @@
+/* V1.4 lot C : animations décoratives et états vides */
+.tabbar button{position:relative}
+.tabbar button.on svg path{fill:currentColor;fill-opacity:.22;stroke-width:2.2}
+.tabdot{position:absolute;top:5px;width:16px;height:3px;border-radius:2px;background:var(--acc)}
+.prog i{position:relative;overflow:hidden}
+.prog i.f{background:var(--line)}
+.prog i::after{content:"";position:absolute;inset:0;background:var(--s);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.3,1.35,.5,1)}
+.prog i.f::after{transform:scaleX(1)}
+.swipe{position:relative}
+.swipe.hl::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:color-mix(in srgb,var(--acc) 22%,transparent);animation:hlf .8s ease-out forwards}
+@keyframes hlf{from{opacity:1}to{opacity:0}}
+.st>span.stx{display:inline-flex;align-items:center;gap:6px}
+.flag{overflow:hidden}
+.dash[data-complete]{border-color:color-mix(in srgb,var(--ready) 55%,var(--line));box-shadow:0 0 0 3px color-mix(in srgb,var(--ready) 16%,transparent),0 0 22px color-mix(in srgb,var(--ready) 26%,transparent);animation:halo .9s ease-in-out 2}
+@keyframes halo{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--ready) 26%,transparent),0 0 36px color-mix(in srgb,var(--ready) 45%,transparent)}}
+.dash-ok{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:var(--fs-meta);font-weight:700;color:var(--ready)}
+.dash-ok svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.empty b{color:var(--ink);font-size:var(--fs-card)}
+@media(prefers-reduced-motion:reduce){.dash[data-complete]{animation:none}.swipe.hl::after{animation:none;opacity:0}.prog i::after{transition:none}}

@@ -6,6 +6,9 @@ import { fmtDM } from './dates'
 import { StatusIconMorph } from './StatusIcon'
 import { CardFlash, buzz } from './Celebrate'
 import { Details } from './Details'
+import { useFlash } from './hl'
+
+const COL = { initial: { height: 0, opacity: 0 }, animate: { height: 'auto', opacity: 1 }, exit: { height: 0, opacity: 0 }, transition: { duration: 0.22, ease: 'easeOut' } }
 
 const SNAP = { type: 'spring', stiffness: 900, damping: 50 }
 const GOOD = (prev, cur) => cur === 'done' || (cur === 'ready' && ['prep', 'wait'].includes(prev))
@@ -15,6 +18,12 @@ function CardBase({ sev, o, team, open, hint, noSwipe, onToggle, onOpen, onProbl
   const x = useMotionValue(0)
   const lp = useRef(null), moved = useRef(false), start = useRef([0, 0]), dragging = useRef(false), prev = useRef(o.status)
   const [flash, setFlash] = useState(0)
+  const hl = useFlash() === o.id, ref = useRef(null)
+  useEffect(() => {
+    if (!hl || !ref.current) return
+    const r = ref.current.getBoundingClientRect()
+    if (r.top < 0 || r.bottom > window.innerHeight - 100) ref.current.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [hl])
   const issue = hasIssue(o), nxt = NEXT[o.status]
   useEffect(() => {
     if (prev.current !== o.status && GOOD(prev.current, o.status)) { setFlash((n) => n + 1); buzz([18]); setTimeout(() => setFlash(0), 1200) }
@@ -67,7 +76,7 @@ function CardBase({ sev, o, team, open, hint, noSwipe, onToggle, onOpen, onProbl
   return (
     <motion.div layout={dragging.current ? false : 'position'} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.12 } }} transition={{ duration: 0.14 }}
-      className={'swipe' + (o.status === 'cancel' ? ' cancel' : '') + (open ? ' open' : '')} style={{ background: "var(--card)" }} data-card={o.num} data-pack={formatPack(o)} title={o.num}>
+      ref={ref} className={(hl ? 'hl ' : '') + 'swipe' + (o.status === 'cancel' ? ' cancel' : '') + (open ? ' open' : '')} style={{ background: "var(--card)" }} data-card={o.num} data-pack={formatPack(o)} title={o.num}>
       <div className="under">
         <motion.span style={{ opacity: bgR, background: nxt ? STATUS[nxt].c : 'transparent', position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', paddingLeft: 20 }}>
           {nxt ? (armed === 1 ? 'Relâcher : ' : '→ ') + (nxt === 'ready' ? 'Fin de préparation' : STATUS[nxt].l) : ''}
@@ -80,16 +89,16 @@ function CardBase({ sev, o, team, open, hint, noSwipe, onToggle, onOpen, onProbl
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
         onClick={() => { if (!moved.current) onToggle(o.id) }} onContextMenu={(e) => e.preventDefault()} aria-expanded={open}>
         <div className="cli">{o.client}</div>
-        <div className="st"><StatusIconMorph k={issue ? 'issue' : o.status} size={16} /><span>{issue ? 'Problème' : st.l}</span>{sev && <i className={'sev' + (sev === 'red' ? ' red' : '')} data-sev={sev} />}</div>
+        <div className="st"><StatusIconMorph k={issue ? 'issue' : o.status} size={16} /><motion.span key={issue ? 'issue' : o.status} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>{issue ? 'Problème' : st.l}</motion.span>{sev && <i className={'sev' + (sev === 'red' ? ' red' : '')} data-sev={sev} />}</div>
         <div className="where">{where(o) || 'Ville non renseignée'}{o.status === 'moved' ? ' · → ' + fmtDM(o.date) : ''}</div>
-        {issue ? (
-          <div className="flag">
+        <AnimatePresence initial={false} mode="popLayout">{issue ? (
+          <motion.div key="flag" className="flag" {...COL}>
             <span>{[...o.missing.map((m) => m.qte + ' × ' + m.produit + ' manquant'), o.err && 'Erreur de préparation'].filter(Boolean).join(' · ')}</span>
             <button onClick={(e) => { e.stopPropagation(); resolve(o.id) }} onPointerDown={(e) => e.stopPropagation()}>Résolu</button>
-          </div>
+          </motion.div>
         ) : (
-          <div className="prog">{[0, 1, 2, 3, 4].map((i) => <i key={i} className={i < st.p ? 'f' : ''} />)}</div>
-        )}
+          <div key="prog" className="prog">{[0, 1, 2, 3, 4].map((i) => <i key={i} className={i < st.p ? 'f' : ''} />)}</div>
+        )}</AnimatePresence>
         <AnimatePresence initial={false}>{open && <Details o={o} team={team} qa={{ ...qa, onDetail: onOpen }} />}</AnimatePresence>
       </motion.div>
       <AnimatePresence>{flash > 0 && <CardFlash key={flash} />}</AnimatePresence>

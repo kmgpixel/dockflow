@@ -11,6 +11,7 @@ import { StatusIcon } from './StatusIcon'
 import { Tick, buzz } from './Celebrate'
 import { SplitSheet } from './SplitSheet'
 import { DayLog } from './DayLog'
+import { Empty } from './Empty'
 import { partLabel } from './split'
 import { OrderRow } from './OrderRow'
 import { TruckGauge, TruckType } from './TruckGauge'
@@ -57,11 +58,7 @@ export function Trucks({ s }) {
           <div key={d} data-ready-group={d}><div className="grp">{l} · {g.length}</div>
             {g.map((o) => <div key={o.id} style={{ marginTop: 8 }}><OrderRow o={o}><button className="linkbtn quiet" data-split={o.num} onClick={() => setSplitFor(o)}>Répartir sur plusieurs camions</button></OrderRow></div>)}</div>) : null })}
         {!day.some((o) => o.driver && ['loaded', 'go'].includes(o.status)) && (<>
-          <div className="empty" data-empty-trucks>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h13v10H2zM15 10h3.5l2.5 3v3h-6" /><path d="M5 19.2a1.4 1.4 0 100-.01M17 19.2a1.4 1.4 0 100-.01" /></svg>
-            <b>Aucun camion chargé</b>
-            <p>{ready.length ? 'Des commandes sont prêtes : chargez-les dans un camion.' : 'Marquez des commandes Prêtes, puis chargez-les dans un camion.'}</p>
-            <button className="btn acc" disabled={!ready.length} onClick={openLoad}>Charger un camion</button></div>
+          <Empty kind="truck" data-empty-trucks title="Aucun camion chargé" text={ready.length ? 'Des commandes sont prêtes : chargez-les dans un camion.' : 'Marquez des commandes Prêtes, puis chargez-les dans un camion.'} action="Charger un camion" disabled={!ready.length} onAction={openLoad} />
           <div className="sec" style={{ padding: '0 6px' }}><span>Livreurs actifs</span></div>
           {drivers.map((dr) => { const last = lastDock(s, dr.id)
             return <div key={dr.id} className="card" data-empty-driver style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

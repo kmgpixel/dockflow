@@ -1,20 +1,21 @@
 import { useState } from 'react'
 import { Sheet, toast } from './ui'
-import { addOrder, addDays, today } from './store'
+import { addOrder, addDays, today, getState } from './store'
+import { flashOrder } from './hl'
 import { DateStrip } from './DateStrip'
 import { TimePick } from './TimePick'
 import { ClientSuggest } from './ClientSuggest'
 
 const mk = () => ({ num: 'SO-L', client: '', city: '', date: addDays(today(), 1), time: '', prep: '' })
 
-export function AddSheet({ open, onClose, team }) {
+export function AddSheet({ open, onClose, team, onAdded }) {
   const [f, setF] = useState(mk)
   const s = (k) => (e) => setF({ ...f, [k]: e.target.value })
   const miss = [(!f.num.trim() || f.num.trim() === 'SO-L') && 'numéro', !f.client.trim() && 'client', !f.city.trim() && 'ville', !f.date && 'date'].filter(Boolean)
   const ok = miss.length === 0
   const endCur = (e) => { const el = e.target; setTimeout(() => el.setSelectionRange(el.value.length, el.value.length), 0) }
   return (
-    <Sheet open={open} onClose={onClose}>
+    <Sheet open={open} onClose={onClose} pop>
       <h2>Nouvelle commande</h2>
       <label><span className="flab">N° de commande</span><input value={f.num} onChange={s('num')} onFocus={endCur} aria-label="Numéro" autoCapitalize="characters" /></label>
       <div><label><span className="flab">Client</span><input placeholder="Nom du client" value={f.client} onChange={s('client')} aria-label="Client" /></label>
@@ -24,7 +25,7 @@ export function AddSheet({ open, onClose, team }) {
       <TimePick value={f.time} onChange={(t) => setF({ ...f, time: t })} />
       <label><span className="flab">Préparateur (optionnel)</span><select value={f.prep} onChange={s('prep')} aria-label="Préparateur"><option value="">Aucun pour l'instant</option>
         {team.preps.filter((p) => p.on).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
-      <button className="btn acc" disabled={!ok} data-submit onClick={() => { addOrder(f); toast('Commande ajoutée'); setF(mk()); onClose() }}>{ok ? 'Ajouter' : 'Il manque : ' + miss.join(', ')}</button>
+      <button className="btn acc" disabled={!ok} data-submit onClick={() => { addOrder(f); const n = getState().orders; flashOrder(n[n.length - 1].id); onAdded?.(f.date); toast('Commande ajoutée'); setF(mk()); onClose() }}>{ok ? 'Ajouter' : 'Il manque : ' + miss.join(', ')}</button>
     </Sheet>
   )
 }

@@ -1,4 +1,5 @@
 import { motion } from 'motion/react'
+import { Empty } from './Empty'
 import { StatusIcon } from './StatusIcon'
 import { hhmm, nameOf } from './store'
 
@@ -28,7 +29,7 @@ export function DayLog({ s }) {
   return (<>
     <div className="sec" style={{ padding: '18px 26px 0' }}><span>Journal du jour</span><span style={{ fontFamily: 'var(--mono)' }}>{ev.length}</span></div>
     <div className="list" data-daylog>
-      {!ev.length && <div className="meta" style={{ textAlign: 'center', padding: 18 }}>Rien pour le moment. Les chargements, départs et retours du jour apparaîtront ici.</div>}
+      {!ev.length && <Empty kind="log" title="Journal du jour vide" text="Rien pour le moment. Les chargements, départs et retours du jour apparaîtront ici." />}
       <div className="dl">
         {ev.map((e, i) => {
           const who = nameOf(s.team.drivers, e.driver)

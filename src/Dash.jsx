@@ -25,10 +25,11 @@ export function dashStats(os) {
 
 export function Dash({ os, fs, setFs }) {
   const d = dashStats(os)
+  const complete = d.total > 0 && os.filter((o) => o.status !== 'cancel').every((o) => ['ready', 'loaded', ...OUT].includes(o.status))
   const lab = d.label + (d.main > 1 ? 's' : '')
   return (
-    <section className="dash" data-dash>
-      <div className="gauge"><strong><Count value={d.main} /></strong><span className="of">sur</span><strong className="tot"><Count value={d.total} /></strong><span className="lab">{lab}</span></div>
+    <section className="dash" data-dash data-complete={complete ? '' : undefined}>
+      <div className="gauge"><strong><Count value={d.main} /></strong><span className="of">sur</span><strong className="tot"><Count value={d.total} /></strong><span className="lab">{lab}</span>{complete && <motion.span className="dash-ok" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }}><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>Journée complète</motion.span>}</div>
       <div className="seg">{d.seg.map(([c, v], i) => <motion.i key={i} initial={false} animate={{ flexGrow: v, opacity: v ? 1 : 0 }} transition={SP} style={{ background: c, flexBasis: 0 }} />)}</div>
       <div className="pills">
         {d.chips.map(([l, v, k]) => {

@@ -6,6 +6,7 @@ import { Dash } from './Dash'
 import { StatusIcon } from './StatusIcon'
 import { Alerts } from './Alerts'
 import { StickHead } from './StickHead'
+import { Empty } from './Empty'
 import { alerts, sevMap } from './calcAlerts'
 import { GlobalSearch } from './GlobalSearch'
 import { VoiceSearch } from './VoiceSearch'
@@ -15,7 +16,7 @@ import { STATUS, NEXT, today, addDays, hasIssue, advance } from './store'
 
 const fmt = (d) => new Date(d + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 
-export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary, onFinish, onLoad, onTrucks }) {
+export function Day({ onAdd, s, date, setDate, onOpen, onProblem, onMenu, onSummary, onFinish, onLoad, onTrucks }) {
   const [q, setQ] = useState(''), [fs, setFs] = useState(null), [fp, setFp] = useState(null), [openId, setOpenId] = useState(null)
   const toggle = useCallback((id) => setOpenId((c) => (c === id ? null : id)), [])
   const hint = useMemo(() => { try { return !localStorage.getItem('df-swipe-hint') } catch { return false } }, [])
@@ -60,7 +61,9 @@ export function Day({ s, date, setDate, onOpen, onProblem, onMenu, onSummary, on
         <AnimatePresence initial={false} mode="popLayout">
           {list.map((o, i) => <Card key={o.id} o={o} sev={sevs[o.id]} team={s.team} open={openId === o.id} hint={hint && i === 0 && !s.settings?.noSwipe} noSwipe={!!s.settings?.noSwipe} onToggle={toggle} qa={qa} onOpen={onOpen} onProblem={onProblem} onMenu={onMenu} onAdvance={advanceCard} />)}
         </AnimatePresence>
-        {!list.length && <div className="meta" style={{ textAlign: 'center', padding: 30 }}>Aucune commande. Touchez + pour en ajouter.</div>}
+        {!list.length && (all.length
+          ? <Empty kind="search" title="Aucune commande ne correspond" text="Essayez une autre recherche ou retirez un filtre." action="Effacer les filtres" onAction={() => { setQ(''); setFs(null); setFp(null) }} />
+          : <Empty kind="day" title="Rien de prévu ce jour" text="Aucune commande n'est enregistrée pour cette date." action="Nouvelle commande" onAction={onAdd} />)}
       </div>
       <GlobalSearch s={s} q={q} date={date} onOpen={onOpen} />
     </div>

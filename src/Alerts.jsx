@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { alerts, worst } from './calcAlerts'
 
 const SP = { type: 'spring', stiffness: 600, damping: 42 }
@@ -21,11 +21,11 @@ export function Alerts({ s, onOpen }) {
       </button>
       <motion.div className="alr-b" initial={false} animate={{ height: open ? 'auto' : 0, opacity: open ? 1 : 0 }} transition={SP} inert={!open}>
         <div className="list" data-alerts>
-          {a.map((x) => (
-            <button key={x.o.id + x.kind} className="alert" onClick={() => onOpen(x.o)}>
+          <AnimatePresence initial={false}>{a.map((x) => (
+            <motion.button key={x.o.id + x.kind} className="alert" onClick={() => onOpen(x.o)} exit={{ x: 60, opacity: 0, transition: { duration: 0.2 } }}>
               <span className="num">{x.o.num}</span><span className="cli2">{x.o.client + ' · ' + (x.o.city || '')}</span>
               <span className="why"><i className={'sev' + (x.sev === 'red' ? ' red' : '')} />{x.txt}</span>
-            </button>))}
+            </motion.button>))}</AnimatePresence>
         </div>
       </motion.div>
     </section>)
