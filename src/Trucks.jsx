@@ -12,6 +12,8 @@ import { Tick, buzz } from './Celebrate'
 import { SplitSheet } from './SplitSheet'
 import { DayLog } from './DayLog'
 import { partLabel } from './split'
+import { OrderRow } from './OrderRow'
+import { TruckGauge, TruckType } from './TruckGauge'
 
 function SigPad({ onSave }) {
   const ref = useRef(), drawing = useRef(false), dirty = useRef(false)
@@ -43,24 +45,28 @@ export function Trucks({ s }) {
     setLeaving(dr.id); buzz([30]); setTimeout(() => setLeaving(null), 380)
     depart(dr.id, date); toast('Départ enregistré · ' + hhmm(Date.now()))
   }
+  const openLoad = () => { setPickFor('x'); setSel(ready.filter((o) => o.date === t0).map((o) => o.id)); setDock(''); setDrv('') }
   const pdf = async (dr) => deliver(loadPdf(getState(), dr.id), 'bon-chargement-' + dr.name.replace(/\W+/g, '') + '.pdf')
   return (
     <div>
       <div className="top"><span className="brand"><i />DOCKFLOW</span><h1>Camions</h1>
         <div className="sub">{ready.length} commande{ready.length > 1 ? 's' : ''} prête{ready.length > 1 ? 's' : ''} à charger (aujourd'hui et demain)</div></div>
       <div className="list" style={{ marginTop: 14 }}>
-        <button className="btn acc" data-charger onClick={() => { setPickFor('x'); setSel(ready.filter((o) => o.date === t0).map((o) => o.id)); setDock(''); setDrv('') }} disabled={!ready.length} style={{ opacity: ready.length ? 1 : 0.4 }}>Charger dans…</button>
+        <button className="btn acc" data-charger onClick={openLoad} disabled={!ready.length} style={{ opacity: ready.length ? 1 : 0.4 }}>Charger dans…</button>
         {[[t0, 'Livraison aujourd\'hui'], [tm, 'Livraison demain']].map(([d, l]) => { const g = ready.filter((o) => o.date === d); return g.length ? (
           <div key={d} data-ready-group={d}><div className="grp">{l} · {g.length}</div>
-            {g.map((o) => <div key={o.id} className="card" style={{ marginTop: 8 }}><div className="row"><b>{o.client}</b><span className="num">{fmtH(o.time)}</span></div>
-              <div className="meta">{o.city} · {o.num} · {formatPackUI(o)}</div>
-              <button className="linkbtn" data-split={o.num} onClick={() => setSplitFor(o)}>Répartir sur plusieurs camions</button></div>)}</div>) : null })}
+            {g.map((o) => <div key={o.id} style={{ marginTop: 8 }}><OrderRow o={o}><button className="linkbtn quiet" data-split={o.num} onClick={() => setSplitFor(o)}>Répartir sur plusieurs camions</button></OrderRow></div>)}</div>) : null })}
         {!day.some((o) => o.driver && ['loaded', 'go'].includes(o.status)) && (<>
-          <div className="sec" style={{ padding: '14px 6px 0' }}><span>Aucun camion chargé · livreurs actifs</span></div>
+          <div className="empty" data-empty-trucks>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h13v10H2zM15 10h3.5l2.5 3v3h-6" /><path d="M5 19.2a1.4 1.4 0 100-.01M17 19.2a1.4 1.4 0 100-.01" /></svg>
+            <b>Aucun camion chargé</b>
+            <p>{ready.length ? 'Des commandes sont prêtes : chargez-les dans un camion.' : 'Marquez des commandes Prêtes, puis chargez-les dans un camion.'}</p>
+            <button className="btn acc" disabled={!ready.length} onClick={openLoad}>Charger un camion</button></div>
+          <div className="sec" style={{ padding: '0 6px' }}><span>Livreurs actifs</span></div>
           {drivers.map((dr) => { const last = lastDock(s, dr.id)
             return <div key={dr.id} className="card" data-empty-driver style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <b>{dr.name}</b><span className="meta">{last ? 'Dernier quai : ' + nameOf(s.team.docks, last) : 'Quai libre'}</span></div> })}
-          <div className="meta" style={{ textAlign: 'center' }}>Marquez des commandes Prêtes, puis touchez « Charger dans… ».</div></>)}
+</>)}
         {drivers.map((dr) => {
           const os = truckOrders(s, dr.id)
           if (!os.length) return null
@@ -74,9 +80,10 @@ export function Trucks({ s }) {
               <AnimatePresence>{leaving === dr.id && <motion.span className="truck-go" initial={{ x: -10, opacity: 0 }} animate={{ x: 90, opacity: 1 }} exit={{ x: 180, opacity: 0 }} transition={{ duration: 0.3 }}><StatusIcon k="go" size={26} /></motion.span>}</AnimatePresence>
               <div className="row"><b style={{ fontSize: 18 }}>{dr.name}</b><span className="num">{dockName(s.team, os.find((o) => o.dock)?.dock)}</span></div>
               <div className="meta">{ld ? 'Chargé le ' + fmtDM(new Date(ld).toISOString().slice(0, 10)) + ' à ' + hhmm(ld) + ' · ' : ''}Livraisons du {dates.map(fmtDM).join(', ')}</div>
+              <TruckGauge orders={os} dr={dr} /><TruckType dr={dr} />
               <AnimatePresence>{os.map((o) => (
-                <motion.div key={o.id} layout className="meta" animate={leaving === dr.id ? { y: -6 } : { y: 0 }} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span><b>{o.client}</b> · {o.city} {fmtH(o.time)} <span className="num">{o.num}{o.part ? ' · ' + partLabel(o) : ''}</span></span><span className="tst" style={{ color: STATUS[o.status].c }}><StatusIcon k={o.status} size={15} />{STATUS[o.status].l}</span></motion.div>))}</AnimatePresence>
+                <motion.div key={o.id} layout animate={leaving === dr.id ? { y: -6 } : { y: 0 }}>
+                  <OrderRow o={o} inner>{o.part ? <span className="pk"><span className="num">{o.num} · {partLabel(o)}</span></span> : null}</OrderRow></motion.div>))}</AnimatePresence>
               {os.length > 0 && os.every((o) => o.status === 'done') && <motion.div className="fin" data-fin initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 600, damping: 35 }}><Tick size={22} />Tournée terminée</motion.div>}
               {dep && <div className="meta">Départ à {hhmm(dep)}{s.sigs[dr.id + date] ? ' · signé' : ''}</div>}
               <div className="btns">
@@ -97,6 +104,7 @@ export function Trucks({ s }) {
             <span><b>{o.client}</b> · {o.city} {fmtH(o.time)}<br /><span className="num">{o.num}</span></span><span>{sel.includes(o.id) ? 'Choisie' : 'Choisir'}</span></button>)}</div> : null })}
         <div className="lbl">Livreur</div>
         <div className="btns">{drivers.map((d) => <button key={d.id} className={'big' + (drv === d.id ? ' on' : '')} data-driver={d.name} onClick={() => { setDrv(d.id); setDock(lastDock(s, d.id) || '') }}>{d.name}</button>)}</div>
+        {drv && <TruckType dr={drivers.find((d) => d.id === drv)} />}
         <div className="lbl">Quai</div>
         <select value={dock} onChange={(e) => setDock(e.target.value)} aria-label="Quai" data-dock><option value="">Non attribué</option>{docks.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select>
         <button className="btn acc" data-confirm disabled={!sel.length || !drv} onClick={() => { const dn = nameOf(drivers, drv); withUndo((sel.length > 1 ? sel.length + ' commandes chargées' : 'Commande chargée') + ' · ' + dn, () => loadTo(sel, drv, dock || null)); setPickFor(null) }}>Charger{sel.length ? ' (' + sel.length + ')' : ''}</button>

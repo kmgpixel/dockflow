@@ -6,6 +6,7 @@ import App from './App'
 import './tokens.css'
 import './style.css'
 import './v14.css'
+import './v14b.css'
 
 registerSW({ immediate: true })
 init().then(() => createRoot(document.getElementById('root')).render(<MotionConfig reducedMotion="user"><App /></MotionConfig>))

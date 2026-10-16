@@ -1,77 +1,18 @@
 import { useState } from 'react'
-import { setSettings, editTeam, setTheme, replaceAll, resetDemo, loadDemo, getState, uid } from './store'
-import { reportPdf, deliver } from './pdf'
-import { toast } from './ui'
-
-function Group({ title, kind, list }) {
-  const [n, setN] = useState('')
-  return (<>
-    <div className="sec"><span>{title}</span></div>
-    <div className="list">
-      {list.map((p) => (
-        <div key={p.id} className="card" style={{ flexDirection: 'row', alignItems: 'center', opacity: p.on ? 1 : 0.5 }}>
-          <input defaultValue={p.name} aria-label={'Nom ' + p.name} onBlur={(e) => e.target.value.trim() && editTeam(kind, (l) => l.map((x) => (x.id === p.id ? { ...x, name: e.target.value.trim() } : x)))} />
-          {kind === 'preps' && <button className={'chip' + (p.resp ? ' on' : '')} data-resp={p.name} onClick={() => editTeam(kind, (l) => l.map((x) => ({ ...x, resp: x.id === p.id ? !x.resp : false })))}>Resp.</button>}
-          <button className="chip" onClick={() => editTeam(kind, (l) => l.map((x) => (x.id === p.id ? { ...x, on: !x.on } : x)))}>{p.on ? 'Actif' : 'Inactif'}</button>
-        </div>))}
-      <div className="btns"><input placeholder="Ajouter…" value={n} onChange={(e) => setN(e.target.value)} style={{ flex: 3 }} />
-        <button className="btn acc" style={{ flex: 1, minWidth: 80 }} onClick={() => { if (n.trim()) { editTeam(kind, (l) => [...l, { id: uid(), name: n.trim(), on: true }]); setN('') } }}>+</button></div>
-    </div></>)
-}
+import { PeopleList } from './PeopleList'
+export { Settings } from './Settings'
 
 export function Team({ s, date, onStats }) {
-  const day = s.orders.filter((o) => o.date === date)
+  const [edit, setEdit] = useState(false)
+  const day = s.orders.filter((o) => o.date === date && o.status !== 'cancel')
   return (
     <div>
       <div className="top"><span className="brand"><i />DOCKFLOW</span><h1>Équipe</h1></div>
-      <div className="sec"><span>Qui a préparé quoi</span></div>
-      <div className="list"><div className="card">
-        {s.team.preps.filter((p) => p.on).map((p) => { const os = day.filter((o) => o.prep === p.id); return (
-          <div key={p.id} className="row"><b>{p.name}</b><span className="meta">{os.length ? os.map((o) => o.client).join(', ') : '—'}</span></div>) })}
-      </div></div>
-      <div className="list" style={{ paddingBottom: 0, marginTop: 10 }}><button className="btn ghost" data-stats onClick={onStats}>Statistiques de la semaine</button></div>
-      <Group title="Préparateurs" kind="preps" list={s.team.preps} />
-      <Group title="Livreurs" kind="drivers" list={s.team.drivers} />
-      <Group title="Quais" kind="docks" list={s.team.docks} />
-    </div>
-  )
-}
-
-export function Settings({ s, date, onStats, onSummary, onOnboard }) {
-  const backup = async () => {
-    const blob = new Blob([JSON.stringify(getState())], { type: 'application/json' })
-    const file = new File([blob], 'dockflow-sauvegarde.json', { type: 'application/json' })
-    try { if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file] }); return } } catch (e) { if (e.name === 'AbortError') return }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; a.click()
-  }
-  const restore = async (e) => {
-    try { const j = JSON.parse(await e.target.files[0].text()); if (!j.orders || !j.team) throw 0; replaceAll(j); toast('Données restaurées') } catch { toast('Fichier invalide') }
-  }
-  return (
-    <div>
-      <div className="top"><span className="brand"><i />DOCKFLOW</span><h1>Réglages</h1></div>
-      <div className="sec"><span>Thème</span></div>
-      <div className="list"><div className="btns">{[['auto', 'Auto'], ['light', 'Clair'], ['dark', 'Sombre']].map(([k, l]) =>
-        <button key={k} className={'chip' + (s.theme === k ? ' on' : '')} style={{ flex: 1 }} onClick={() => setTheme(k)}>{l}</button>)}</div></div>
-      <div className="sec"><span>Données</span></div>
-      <div className="list">
-        <button className="btn" data-backup onClick={backup}>Sauvegarder (.json)</button>
-        <label className="btn ghost" style={{ display: 'grid', placeItems: 'center' }}>Restaurer…<input type="file" accept="application/json,.json" hidden data-restore onChange={restore} /></label>
-        <button className="btn ghost" onClick={onSummary}>Résumé du soir (texte)</button>
-        <button className="btn ghost" onClick={onStats}>Statistiques de la semaine</button>
-        <button className="btn ghost" data-report onClick={() => deliver(reportPdf(getState(), date), 'rapport-' + date + '.pdf')}>Rapport du jour (PDF)</button>
-        <button className="btn ghost" onClick={loadDemo}>Recharger les données de démo</button>
-        <button className="btn bad" data-clear onClick={() => { if (confirm('Vider toutes les commandes ?')) { resetDemo(); toast('Données vidées') } }}>Vider les données de démo</button>
-      </div>
-      <div className="sec"><span>Affichage</span></div>
-      <div className="list"><button className={'btn ' + (s.settings?.dockMode ? 'acc' : 'ghost')} data-dockmode aria-pressed={!!s.settings?.dockMode} onClick={() => setSettings({ dockMode: !s.settings?.dockMode })}>Mode au quai : {s.settings?.dockMode ? 'activé' : 'désactivé'}</button>
-        <div className="meta">Textes plus grands, boutons larges, contraste renforcé.</div>
-        <button className="btn ghost" data-swipeopt aria-pressed={!s.settings?.noSwipe} onClick={() => setSettings({ noSwipe: !s.settings?.noSwipe })}>Glisser les cartes : {s.settings?.noSwipe ? 'désactivé' : 'activé'}</button>
-        <div className="meta">Désactivé : on utilise seulement les boutons de la carte dépliée.</div></div>
-      <div className="sec"><span>Équipe</span></div>
-      <div className="list"><button className="btn ghost" data-onboard onClick={onOnboard}>Configurer mon équipe</button></div>
-      <div className="sec"><span>À propos</span></div>
-      <div className="list"><div className="card meta">DockFlow v1.3 — suivi des livraisons du dépôt. Données stockées uniquement sur cet appareil. Toutes les données de démo sont fictives.</div></div>
+      <div className="sec"><span>Aujourd'hui</span><button className="edtbtn" data-edit-team aria-pressed={edit} onClick={() => setEdit(!edit)}>{edit ? 'Terminé' : 'Modifier'}</button></div>
+      <PeopleList title="Préparateurs" kind="preps" list={s.team.preps} orders={day} edit={edit} />
+      <PeopleList title="Livreurs" kind="drivers" list={s.team.drivers} orders={day} edit={edit} />
+      <PeopleList title="Quais" kind="docks" list={s.team.docks} orders={day} edit={edit} />
+      <div className="list" style={{ marginTop: 'var(--sp-4)' }}><button className="btn ghost" data-stats onClick={onStats}>Statistiques de la semaine</button></div>
     </div>
   )
 }
