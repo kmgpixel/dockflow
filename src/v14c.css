@@ -17,3 +17,4 @@
 .dash-ok svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .empty b{color:var(--ink);font-size:var(--fs-card)}
 @media(prefers-reduced-motion:reduce){.dash[data-complete]{animation:none}.swipe.hl::after{animation:none;opacity:0}.prog i::after{transition:none}}
+.empty[data-empty]{padding-top:var(--sp-6);padding-bottom:calc(var(--sp-6) + 96px)}
