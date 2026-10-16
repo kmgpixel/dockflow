@@ -38,9 +38,9 @@ if(th==='light'){
  await p.evaluate(()=>document.querySelector('[data-driver]').click()); await sl(200)
  ok('type de camion dans le sheet',await p.evaluate(()=>!!document.querySelector('.sheet [data-trucktype]')))
  await p.click('[data-confirm]'); await sl(1200)
- const t=await txt(); ok('jauge « / 8 pal. »',/\/ 8 pal\./.test(t),(t.match(/\d+ \/ \d+ pal\./)||[''])[0])
+ const t=await txt(); ok('jauge « / 8 pal. »',/\/ 8 places/.test(t),(t.match(/\d+ \/ \d+ places/)||[''])[0])
  await p.evaluate(()=>document.querySelector('[data-trucktype="semi"]').click()); await sl(500)
- ok('semi → / 33 pal.',/\/ 33 pal\./.test(await txt()))
+ ok('semi → / 33 pal.',/\/ 33 places/.test(await txt()))
  await p.evaluate(()=>document.querySelector('[data-trucktype="20m3"]').click()); await sl(400)
 }
 await p.screenshot({path:C+'camions-'+th+'.png'})

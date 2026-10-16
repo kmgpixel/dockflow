@@ -8,7 +8,7 @@ const log = (o, action) => ({ ...o, history: [...(o.history || []), { ts: Date.n
 // Contenu d'une partie à partir de la répartition saisie
 export function partPack(o, p, i, ductOwner, bulkOwner) {
   return {
-    pallets: p.pallets, parcels: p.parcels,
+    pallets: p.pallets, stacked: Math.min(+o.stacked || 0, Math.floor(p.pallets / 2)), parcels: p.parcels,
     ducts: ductsOf(o).filter((_, k) => ductOwner[k] === i).map((g) => ({ ...g })),
     bulk: !!o.bulk && bulkOwner === i, bulkNote: o.bulk && bulkOwner === i ? o.bulkNote || '' : '',
   }

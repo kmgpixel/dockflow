@@ -8,9 +8,12 @@ export const ductsOf = (o) => (o.ducts || []).filter((g) => g.q > 0)
 export const ductLine = (g) => g.q + ' × Ø' + g.d + ' ' + fmtLen(g.len)
 
 export const formatPackUI = (o) => formatPack(o).split(' · ').map((x) => x.replace(/ /g, '\u00a0')).join(' · ')
+export const stackOf = (o) => Math.max(0, Math.min(+o.stacked || 0, Math.floor((+o.pallets || 0) / 2)))
+export const floorOf = (o) => (+o.pallets || 0) - stackOf(o)
+export const palTxt = (o) => o.pallets + ' pal.' + (stackOf(o) ? ' (dont ' + stackOf(o) + ' gerbée' + (stackOf(o) > 1 ? 's' : '') + ')' : '')
 export function formatPack(o) {
   const p = []
-  if (o.pallets > 0) p.push(o.pallets + ' pal.')
+  if (o.pallets > 0) p.push(palTxt(o))
   if (o.parcels > 0) p.push(o.parcels + ' colis')
   ductsOf(o).forEach((g) => p.push(ductLine(g)))
   if (o.bulk) p.push('vrac' + (o.bulkNote?.trim() ? ' (' + o.bulkNote.trim() + ')' : ''))
@@ -18,6 +21,7 @@ export function formatPack(o) {
 }
 export const packTotals = (os) => ({
   pal: os.reduce((a, o) => a + (+o.pallets || 0), 0),
+  floor: os.reduce((a, o) => a + floorOf(o), 0),
   col: os.reduce((a, o) => a + (+o.parcels || 0), 0),
   duct: os.reduce((a, o) => a + ductsOf(o).reduce((b, g) => b + g.q, 0), 0),
   bulk: os.filter((o) => o.bulk).length,

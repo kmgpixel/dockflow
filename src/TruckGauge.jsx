@@ -17,15 +17,15 @@ export function TruckType({ dr }) {
 
 export function TruckGauge({ orders, dr }) {
   const cap = capOf(dr)
-  const t = packTotals(orders), pal = t.pal, n = orders.length
+  const t = packTotals(orders), pal = t.floor, all = t.pal, n = orders.length
   const cells = Math.max(cap, pal)
   return (
     <div className="gauge" data-gauge>
-      <div className="gauge-bar" role="img" aria-label={pal + ' palettes sur ' + cap}>
+      <div className="gauge-bar" role="img" aria-label={pal + ' places au sol sur ' + cap}>
         {Array.from({ length: cells }, (_, i) => (
           <motion.i key={i} className={i < pal ? (i >= cap ? 'f over' : 'f') : ''} initial={{ scaleX: 0.2, opacity: 0.4 }} animate={{ scaleX: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 600, damping: 35, delay: Math.min(i, 12) * 0.012 }} />))}
       </div>
-      <div className="gauge-t"><b>{pal} / {cap} pal.</b> · {n} commande{n > 1 ? 's' : ''}{pal > cap && <b className="ovr"> · Dépassement +{pal - cap} pal.</b>}</div>
+      <div className="gauge-t"><b>{pal} / {cap} places</b> · {all} pal.{all > pal ? ' (' + (all - pal) + ' gerbée' + (all - pal > 1 ? 's' : '') + ')' : ''} · {n} commande{n > 1 ? 's' : ''}{pal > cap && <b className="ovr"> · Dépassement +{pal - cap} place{pal - cap > 1 ? 's' : ''}</b>}</div>
     </div>)
 }

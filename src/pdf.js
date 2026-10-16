@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf'
 import { STATUS, hhmm, hasIssue, iso, fmtDM } from './store'
 import { INK, MUT, LINE, BAD, W, M, head, facts, sec, foot, pill, stColor, alerts, photos, sigBox } from './pdfKit'
-import { formatPack, packTotals, fmtH, where, ductsOf, ductLine } from './pack'
+import { formatPack, packTotals, fmtH, where, ductsOf, ductLine, palTxt } from './pack'
 import { respOf, initials, dockName, prepName } from './people'
 import { truckOrders } from './truckSel'
 
@@ -19,7 +19,7 @@ const fr = (date) => date.split('-').reverse().join('/')
 function row(d, y, o, s) {
   const tx = M + 2, right = W - M - 42
   const pk = []
-  const base = [o.pallets > 0 && o.pallets + ' pal.', o.parcels > 0 && o.parcels + ' colis'].filter(Boolean).join(' · ')
+  const base = [o.pallets > 0 && palTxt(o), o.parcels > 0 && o.parcels + ' colis'].filter(Boolean).join(' · ')
   if (base) pk.push(base)
   ductsOf(o).forEach((g) => pk.push(ductLine(g)))
   if (o.bulk) pk.push('vrac' + (o.bulkNote?.trim() ? ' (' + o.bulkNote.trim() + ')' : ''))

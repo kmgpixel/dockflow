@@ -1,0 +1,42 @@
+import puppeteer from 'puppeteer-core'; import fs from 'fs'
+const b=await puppeteer.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:'new'})
+const p=await b.newPage(); const errs=[]
+p.on('console',m=>{if(m.type()==='error')errs.push(m.text())}); p.on('pageerror',e=>errs.push('PAGE '+e.message))
+await p.setViewport({width:402,height:874,deviceScaleFactor:2,isMobile:true,hasTouch:true})
+const R=[]; const ok=(n,v,x='')=>R.push((v?'PASS ':'FAIL ')+n+' '+x)
+const cardAll=n=>p.evaluate(n=>{const e=document.querySelector(`[data-card="${n}"]`);return e?(e.innerText+' '+e.dataset.card+' '+(e.dataset.pack||'')).replace(/\u00a0/g,' '):''},n)
+const sl=ms=>new Promise(r=>setTimeout(r,ms))
+const txt=()=>p.evaluate(()=>document.body.innerText.replace(/\u00a0/g,' '))
+const clickT=(t,sel='button')=>p.evaluate((t,sel)=>{const e=[...document.querySelectorAll(sel)].find(x=>x.innerText.trim().startsWith(t));if(e){e.click();return true}return false},t,sel)
+const box=async n=>p.evaluate(n=>{const e=document.querySelector(`[data-card="${n}"] .c`);e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}},n)
+const swipe=async(n,dx)=>{await sl(300);const bx=await box(n);await sl(200);const sx=dx>0?bx.x+40:bx.x+bx.w-40,y=bx.y+30
+ await p.touchscreen.touchStart(sx,y);for(let i=1;i<=12;i++){await p.touchscreen.touchMove(sx+dx/12*i,y);await sl(16)}await p.touchscreen.touchEnd();await sl(600)}
+const day=k=>p.evaluate(k=>document.querySelector(`.days button:nth-child(${k})`).click(),k)
+const tab=async t=>{await clickT(t,'nav button');await sl(500)}
+const T='http://localhost:4180/dockflow/'
+await p.goto(T,{waitUntil:'networkidle0'}); await sl(1200)
+const n=await p.evaluate(()=>[...document.querySelectorAll('[data-card]')].find(e=>/En préparation/.test(e.innerText))?.dataset.card)
+const b0=await box(n); await p.touchscreen.tap(b0.x+60,b0.y+22); await sl(600)
+await p.evaluate(n=>document.querySelector(`[data-card="${n}"] [data-qmain]`).click(),n); await sl(700)
+await p.evaluate(async()=>{const s=document.querySelector('[aria-label="Moins palettes"]');for(let i=0;i<10;i++){s.click();await new Promise(r=>setTimeout(r,20))}const pl=document.querySelector('[aria-label="Plus palettes"]');for(let i=0;i<4;i++){pl.click();await new Promise(r=>setTimeout(r,30))}}); await sl(200)
+await p.evaluate(async()=>{const g=document.querySelector('[aria-label="Plus gerbées"]');for(let i=0;i<5;i++){g.click();await new Promise(r=>setTimeout(r,30))}}); await sl(200)
+const fl=await p.evaluate(()=>document.querySelector('[data-floor]')?.innerText||'')
+ok('4 pal. dont 2 gerbées max → 2 places au sol',/^2 places au sol/.test(fl),fl)
+const pv=await p.evaluate(()=>(document.querySelector('[data-packprev]')?.innerText||'').replace(/\u00a0/g,' '))
+ok('aperçu « 4 pal. (dont 2 gerbées) »',/4 pal\. \(dont 2 gerbées\)/.test(pv),pv)
+await p.evaluate(()=>document.querySelector('[data-allok]').click()); await sl(700)
+const b1=await box(n); if(!await p.evaluate(n=>!!document.querySelector(`[data-card="${n}"] [data-qmain]`),n)){await p.touchscreen.tap(b1.x+60,b1.y+22);await sl(600)}
+await p.evaluate(n=>document.querySelector(`[data-card="${n}"] [data-qmain]`).click(),n); await sl(700)
+await p.evaluate(()=>[...document.querySelectorAll('.sheet [data-driver]')].find(b=>b.dataset.driver==='Marc L.').click()); await sl(200)
+await p.evaluate(()=>document.querySelector('.sheet [data-confirm]').click()); await sl(700)
+await tab('Camions'); await sl(500)
+const g=await p.evaluate(()=>(document.querySelector('[data-truck="Marc L."] [data-gauge]')?.innerText||'').replace(/\u00a0/g,' '))
+ok('jauge camion : 2 / 8 places · 4 pal. (2 gerbées)',/2 \/ 8 places/.test(g)&&/4 pal\./.test(g)&&/2 gerbées/.test(g),g.replace(/\n/g,'|'))
+await p.evaluate(()=>{Object.defineProperty(navigator,'canShare',{value:undefined,configurable:true});HTMLAnchorElement.prototype.click=function(){}})
+await p.evaluate(()=>document.querySelector('[data-truck="Marc L."] [data-pdf]').scrollIntoView({block:'center'})); await sl(300)
+await p.click('[data-truck="Marc L."] [data-pdf]'); await sl(1300)
+const t=await p.evaluate(()=>window.__pdfText||'')
+ok('bon de chargement : « 4 pal. (dont 2 gerbées) »',/4 pal\. \(dont 2 gerbées\)/.test(t))
+await p.screenshot({path:'/Volumes/KoulèKréyol/workspace/DockFlow/captures/v1.4b/gerbage.png'})
+ok('zéro erreur console',errs.length===0,errs.join(' / '))
+console.log(R.join('\n')); await b.close()
