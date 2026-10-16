@@ -7,7 +7,7 @@ import { AddSheet } from './AddSheet'
 import { PrepSheet } from './PrepSheet'
 import { ProblemSheet, MenuSheet, PostponeSheet, DetailSheet } from './Sheets'
 import { AnimatePresence } from 'motion/react'
-import { Icon, Toaster } from './ui'
+import { Icon, Toaster, hideToast } from './ui'
 import { Stats } from './Stats'
 import { LoadOne } from './LoadOne'
 import { Onboarding } from './Onboarding'
@@ -15,7 +15,8 @@ import { SummarySheet } from './Summary'
 
 export default function App() {
   const s = useStore()
-  const [tab, setTab] = useState('day'), [date, setDate] = useState(today())
+  const [tab, setTab0] = useState('day'), [date, setDate] = useState(today())
+  const setTab = (t) => { hideToast(); setTab0(t) }
   const [onb, setOnb] = useState(() => { try { return /[?&]onboarding/.test(location.search) || (firstRun && !navigator.webdriver && !hasRealData(s)) } catch { return false } })
   const [sum, setSum] = useState(false), [add, setAdd] = useState(false), [detail, setDetail] = useState(null), [prob, setProb] = useState(null), [menu, setMenu] = useState(null), [post, setPost] = useState(null), [fin, setFin] = useState(null), [pk, setPk] = useState(null), [ld, setLd] = useState(null)
   useEffect(() => {

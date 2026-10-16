@@ -22,7 +22,7 @@ export function Settings({ s, date, onStats, onSummary, onOnboard }) {
         <div className="seg3" style={{ borderTop: 0, paddingTop: 0 }}>{[['auto', 'Auto'], ['light', 'Clair'], ['dark', 'Sombre']].map(([k, l]) =>
           <button key={k} className={'chip' + (s.theme === k ? ' on' : '')} onClick={() => setTheme(k)}>{l}</button>)}</div>
         <Row icon="dock" label="Mode au quai" sub="Textes plus grands, boutons larges" sw={dm} data-dockmode aria-pressed={dm} onClick={() => setSettings({ dockMode: !dm })} />
-        <Row icon="swipe" label="Glisser les cartes" sub="Désactivé : boutons de la carte dépliée" sw={sw} data-swipeopt aria-pressed={sw} onClick={() => setSettings({ noSwipe: sw })} />
+        <Row icon="swipe" label="Glisser les cartes" sub={sw ? "Glisser une carte change son statut" : "Seulement les boutons de la carte dépliée"} sw={sw} data-swipeopt aria-pressed={sw} onClick={() => setSettings({ noSwipe: sw })} />
       </Section>
       <Section title="Rapports">
         <Row icon="sum" label="Résumé du soir" chev data-summary onClick={onSummary} />

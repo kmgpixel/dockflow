@@ -46,11 +46,13 @@ export function Count({ value }) {
 }
 
 let toastFn = () => {}
+let hideFn = () => {}
+export const hideToast = () => hideFn()
 export const toast = (m, undo) => toastFn(m, undo)
 export function Toaster() {
   const [m, setM] = useState(null)
   const tm = useRef(null)
-  useEffect(() => { toastFn = (x, undo) => { clearTimeout(tm.current); setM({ x, undo }); tm.current = setTimeout(() => setM(null), undo ? 5000 : 2200) } }, [])
+  useEffect(() => { hideFn = () => { clearTimeout(tm.current); setM(null) }; toastFn = (x, undo) => { clearTimeout(tm.current); setM({ x, undo }); tm.current = setTimeout(() => setM(null), undo ? 5000 : 2200) } }, [])
   return <AnimatePresence>{m && <motion.div key={m.x} className="toast" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
     <span>{m.x}</span>{m.undo && <button className="undo" data-undo onClick={() => { clearTimeout(tm.current); setM(null); m.undo() }}>Annuler</button>}</motion.div>}</AnimatePresence>
 }

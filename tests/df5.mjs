@@ -60,7 +60,7 @@ ok('camion 2 : partie 2/2',/Atelier Durand/.test(t2)&&/Partie 2\/2/.test(t2),t2.
 await p.screenshot({path:C+'camions-reparti.png'})
 // PDF de chaque camion : contenu de sa partie seulement
 await p.evaluate(()=>{Object.defineProperty(navigator,'canShare',{value:undefined,configurable:true});HTMLAnchorElement.prototype.click=function(){}})
-const pdfOf=async(n)=>{await p.click(`[data-truck="${n}"] [data-pdf]`);await sl(1200);return p.evaluate(()=>window.__pdfText||'')}
+const pdfOf=async(n)=>{await p.evaluate(n=>document.querySelector(`[data-truck="${n}"] [data-pdf]`).scrollIntoView({block:"center"}),n);await sl(300);await p.click(`[data-truck="${n}"] [data-pdf]`);await sl(1200);return p.evaluate(()=>window.__pdfText||'')}
 const p1=await pdfOf('Express Nord'), p2=await pdfOf('Sofiane')
 ok('PDF camion 1 : 2 pal, pas de gaines',/PARTIELLE 1\/2/.test(p1)&&/2 pal\./.test(p1)&&!/Ø800/.test(p1),'')
 ok('PDF camion 2 : 1 pal, 2 colis, 10 × Ø800, vrac',/PARTIELLE 2\/2/.test(p2)&&/1 pal\./.test(p2)&&/2 colis/.test(p2)&&/10 × Ø800/.test(p2)&&/vrac/.test(p2),'')

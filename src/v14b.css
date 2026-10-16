@@ -55,3 +55,9 @@
 @media(prefers-reduced-motion:reduce){.sw,.sw::after{transition:none}}
 .seg2{display:flex;gap:var(--sp-2)}.seg2 .chip{flex:1;justify-content:center;border-radius:var(--r-ctl);min-height:36px}
 .gauge-t .ovr{color:var(--bad-t)}
+
+/* lot B finitions */
+[data-dockmode]::after,[data-swipeopt]::after{content:none!important;display:none!important}
+.pk-more{margin-left:0;padding-left:0}
+.pk-more button{padding-left:0;min-height:36px;color:var(--mut);font-size:var(--fs-meta);font-weight:600}
+.btn:disabled{color:var(--mut)!important}
